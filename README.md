@@ -2,7 +2,7 @@
 
 A playable roguelite deckbuilder grown from [LEAF](https://github.com/amuletmaiden/leaf), the kata-based metaphysics simulator.
 
-![LEAFBOUND battle](media/battle.png)
+![LEAFBOUND](icon.svg)
 
 ## Play
 
