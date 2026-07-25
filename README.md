@@ -1,89 +1,83 @@
-# LEAFBOUND — The Living Constitution
+# LEAFBOUND — The Living Tarot
 
-A playable roguelite deckbuilder grown from [LEAF](https://github.com/amuletmaiden/leaf), the kata-based metaphysics simulator.
+A wordless two-card tarot roguelite grown from [LEAF](https://github.com/amuletmaiden/leaf).
 
-![LEAFBOUND](icon.svg)
+**Play:** https://amuletmaiden.github.io/leafbound/
 
-## Play
 
-Open `index.html` in a modern browser. There is no build step, dependency, account, or network requirement.
+LEAFBOUND is not an attack-and-damage deckbuilder. Every encounter is a girl held inside an impossible arrangement of color. You resolve her condition by composing ordered pairs of symbols and making the present field resemble the future she desires.
 
-Keyboard:
+## The reading
 
-- `1–9`: play a card from the hand
-- `R`: rest and resolve the current law
-- `Ctrl/Cmd + Z`: undo the most recent card
+Every turn accepts exactly two cards:
 
-## The central invention
+1. The first symbol determines which goddess acts.
+2. The second determines what she acts on, with, through, or upon.
+3. Order matters. Green → Blue summons the Siren; Blue → Green summons the Mermaid.
 
-Enemies do not announce one intent. Each turn begins with a **possibility spectrum**: several mutually compatible futures the condition might enter.
+The starting deck follows the cadence **RGBRGBP**:
 
-Cards are clauses in a four-part law. Every new color and directional color-pair changes which futures remain metaphysically coherent. At resolution, the enemy is only allowed to perform a future that survived the law. If every hostile future has been made impossible, the world enters **paradox** and rejects the enemy action entirely.
+- Sun — red
+- Green Eye — green
+- Mirror — blue
+- Flame — red
+- Garden — green
+- Swan — blue
+- Moth — pink
 
-This makes defense neither blocking nor prediction. It is constructive counterfactual control: write the rule-system under which the opponent must exist.
+Cards are wordless on the ritual table. Their central symbol, color, body-place, pips, and accumulated karmic weight communicate their identity. A toggle reveals names for accessibility and learning.
 
-## Systems
+## Four physical colors
 
-### The Living Constitution
+Everything contains a hidden four-channel field:
 
-A turn is a sentence of up to four gestures. HEART, LOVE, POWER, and TEMPLE are semantic operators, not cosmetic suits. Direction matters: HEART → LOVE and LOVE → HEART are different laws.
+- **Red / Heart** — self, action, motion, strength
+- **Green / Love** — connection, life, sight, growth
+- **Pink / Power** — decay, fermentation, transformation
+- **Blue / Temple** — law, stillness, distance, structure
 
-Adjacent identical colors are illegal unless a card explicitly creates an exceptional collision.
+The field is shown as a continuous aura, not as damage numbers. A condition resolves when her current aura crosses the harmony threshold and remains there for enough consecutive rites.
 
-### Chorus of Precedent
+## What is unusual here
 
-Every directional relationship is remembered. Repeat it and its effect becomes stronger. Repeated law also generates ambient ward at the beginning of later turns. The deck is therefore not only built by acquisition: its grammar learns from use.
+- **Exactly two cards per turn.** There are no energy points or attack rotations.
+- **Sixteen ordered manifestations.** Each color pair summons a distinct goddess-form.
+- **No enemies or health bars.** Failure means the condition hardens before a livable continuation is found.
+- **Karmic gravity.** Played symbols become heavier, return more readily, and awaken after repeated use.
+- **Hands, Eyes, Lips, Pockets.** Cards inhabit body-places that alter how a rite behaves.
+- **Location row.** Three omens change the physical interpretation of the same pair from turn to turn.
+- **Color-vector operations.** Rites transfer, invert, preserve, smooth, delay, or incarnate color weight.
+- **Deckbuilding through memory.** Resolved girls offer new tarot symbols rather than weapons.
+- **Persistent codex.** Discovered manifestations remain witnessed in local storage.
 
-### Fermentation
+## Current vertical slice
 
-Cards gain rot when played. At three rot, a card does not break or become a conventional upgraded `+` version; it ferments into a changed behavior. Rot is duration made legible.
+The build contains:
 
-### Possibility Spectrum
+- 18 symbolic tarot cards
+- 16 ordered color manifestations
+- 8 location omens
+- 4 condition-girls
+- a complete beginning-to-ending run
+- reward drafting between readings
+- procedural SVG character illustration
+- optional WebAudio chimes
+- responsive desktop and mobile layouts
+- keyboard controls: `1–5`, `Enter`, `Ctrl/Cmd+Z`, `Esc`
 
-Futures can be removed by:
+## Local use
 
-- including a color;
-- writing a particular directional pair;
-- declaring a particular first cause;
-- achieving a fully distinct four-color crown;
-- invoking cards that silently collapse one remaining branch.
+No build step or network connection is required. Open `index.html`, or serve the directory with any static web server.
 
-### The Living Ledger
+## Development
 
-Discovered laws, denied futures, fermented gestures, runs, and victories persist in local storage. The next run begins mechanically fresh but metaphysically informed.
+The game is deliberately self-contained:
 
-### Clock of Power
-
-The pace control changes animation and presentation only. It cannot alter random outcomes, damage, draw order, or simulation law.
-
-## Encounters
-
-1. **The Lawless Gyre** — force without boundary.
-2. **The Bride of Ice** — one perfect future freezing every alternative.
-3. **The Star-Devourer** — a retrograde condition near which processes un-happen.
-
-## Visual and audio architecture
-
-The game has no image, font, shader, or audio dependencies. Its presentation is generated at runtime:
-
-- high-DPI canvas star field and law lattice;
-- semantic four-color orbital lights;
-- persistent particle reactions for card play and damage;
-- CSS-composited manifestations and glass architecture;
-- procedural Web Audio tones mapped to the four kata;
-- responsive desktop and mobile layouts.
-
-## Project structure
-
-- `index.html` — semantic UI and screens
-- `styles.css` — presentation, motion, cards, responsive layout
-- `game.js` — combat, cards, futures, persistence, rendering, audio
-- `DESIGN.md` — mechanical rationale and expansion plan
-
-## Status
-
-This repository contains a complete polished vertical slice: a three-encounter run, persistent progression ledger, reward drafting, fourteen cards, twelve directional relations, card transformation, procedural presentation, victory and defeat states, undo, keyboard controls, and generative sound.
+- `index.html` — semantic interface and dialogs
+- `styles.css` — visual system, tarot cards, responsive layout
+- `game.js` — color physics, deck state, girls, omens, persistence, sound
+- `DESIGN.md` — rules and production direction
 
 ## License
 
-MIT. LEAFBOUND's specific fiction, names, and visual identity remain attributable to Katherine / amuletmaiden.
+MIT.
