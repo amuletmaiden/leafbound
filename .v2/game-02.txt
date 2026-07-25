@@ -1,0 +1,104 @@
+ation(ctx){
+    const {key,mag}=ctx;
+    const e=errors();
+    switch(key){
+      case 'rr': moveToward('r',mag*1.25); moveToward(mostSurplus(['r']),mag*.45); break;
+      case 'rg': moveToward('r',mag*.65); moveToward('g',mag); transfer(mostSurplus(['r','g']),'g',mag*.35); break;
+      case 'rp': {
+        const needR=e.r>e.p?'r':'p', other=needR==='r'?'p':'r';
+        transfer(other,needR,mag*.75); moveToward(needR,mag*.45); ctx.residue.p+=1.5; break;
+      }
+      case 'rb': moveToward('r',mag*.8); moveToward('b',mag*.8); ctx.freeze=true; break;
+      case 'gr': moveToward('g',mag*.85); moveToward('r',mag*.85); balancePair('g','r',mag*.35); break;
+      case 'gg': moveToward(mostDeficit(),mag*1.05); moveToward(mostDeficit(),mag*.55); break;
+      case 'gp': swapIfBetter('g','p',mag); moveToward('g',mag*.45); moveToward('p',mag*.45); break;
+      case 'gb': moveAllToward(mag*.48); moveToward('g',mag*.35); moveToward('b',mag*.35); break;
+      case 'pr': transfer(mostSurplus(['r']),'r',mag*.8); moveToward('r',mag*.7); ctx.residue.r+=1; break;
+      case 'pg': {
+        const payload={r:0,g:mag*.75,p:-mag*.25,b:0,label:'chrysalis'};
+        state.delayed.push(payload); moveToward('p',mag*.45); ctx.result='A chrysalis will open after the next rite.'; break;
+      }
+      case 'pp': invertLargestError(mag); invertLargestError(mag*.6); break;
+      case 'pb': {
+        const from=mostSurplus(); const to=mostDeficit(); const kept=Math.min(mag*.7,Math.max(0,state.current[from]-state.target[from]));
+        if(kept>0){ state.current[from]-=kept; state.pocket.push({from,to,amount:kept,label:'sealed wing'}); state.current=normalize(state.current); ctx.result='A surplus has been folded into the pocket.'; }
+        else moveToward('p',mag);
+        break;
+      }
+      case 'br': transfer('b',mostDeficit(['b']),mag*.75); moveToward('r',mag*.5); break;
+      case 'bg': moveAllToward(mag*.62); smoothExtremes(mag*.3); break;
+      case 'bp': moveToward(mostSurplus(),mag*1.15); moveToward('p',mag*.35); break;
+      case 'bb': moveAllToward(mag*.38); moveToward('b',mag*.65); ctx.freeze=true; break;
+    }
+    for(const k of 'rgpb') if(ctx.residue[k]) state.current[k]+=ctx.residue[k];
+    state.current=normalize(state.current);
+  }
+  function balancePair(a,b,amount){
+    const desiredDiff=state.target[a]-state.target[b], currentDiff=state.current[a]-state.current[b];
+    const delta=clamp((desiredDiff-currentDiff)/2,-amount,amount);
+    state.current[a]+=delta; state.current[b]-=delta; state.current=normalize(state.current);
+  }
+  function swapIfBetter(a,b,amount){
+    const before=Math.abs(state.target[a]-state.current[a])+Math.abs(state.target[b]-state.current[b]);
+    const take=Math.min(amount,Math.abs(state.current[a]-state.current[b])*.35);
+    const trial=cloneVec(state.current); const dir=state.current[a]>state.current[b]?1:-1;
+    trial[a]-=dir*take; trial[b]+=dir*take;
+    const after=Math.abs(state.target[a]-trial[a])+Math.abs(state.target[b]-trial[b]);
+    if(after<before) state.current=normalize(trial); else { moveToward(a,amount*.5); moveToward(b,amount*.5); }
+  }
+  function invertLargestError(amount){
+    const from=mostSurplus(), to=mostDeficit();
+    if(errors()[from]<0 && errors()[to]>0) transfer(from,to,amount*.75); else moveToward(to,amount*.6);
+  }
+  function smoothExtremes(amount){
+    const hi=Object.keys(state.current).sort((a,b)=>state.current[b]-state.current[a])[0];
+    const lo=Object.keys(state.current).sort((a,b)=>state.current[a]-state.current[b])[0];
+    transfer(hi,lo,amount);
+  }
+
+  function startRun(){
+    state.encounter=0; state.turn=1; state.resolved=0; state.runKarma=0; state.pairHistory={}; state.pocket=[]; state.delayed=[]; state.selected=[];
+    state.deck=STARTER.map(makeCard); state.draw=[]; state.discard=[]; state.hand=[];
+    showScreen('game'); startEncounter();
+  }
+  function startEncounter(){
+    const encounter=ENCOUNTERS[state.encounter];
+    state.turn=1; state.stable=0; state.current=cloneVec(encounter.current); state.target=cloneVec(encounter.target); state.activeOmen=0;
+    state.omens=sample(OMENS,3); state.selected=[]; state.pocket=[]; state.delayed=[]; state.freezeNext=false;
+    state.draw=weightedShuffle([...state.deck]); state.discard=[]; state.hand=[]; drawTo(5);
+    renderAll();
+  }
+  function drawTo(n){ while(state.hand.length<n){ const c=drawOne(); if(!c) break; state.hand.push(c); } }
+  function drawOne(){
+    if(!state.draw.length){ if(!state.discard.length) return null; state.draw=weightedShuffle(state.discard.splice(0)); }
+    return state.draw.shift();
+  }
+  function weightedShuffle(cards){
+    const pool=[...cards], out=[];
+    while(pool.length){
+      const total=pool.reduce((t,c)=>t+1+c.karma*.35,0); let roll=Math.random()*total; let idx=0;
+      for(;idx<pool.length;idx++){ roll-=1+pool[idx].karma*.35; if(roll<=0) break; }
+      out.push(pool.splice(Math.min(idx,pool.length-1),1)[0]);
+    }
+    return out;
+  }
+  function sample(arr,n){ return [...arr].sort(()=>Math.random()-.5).slice(0,n); }
+
+  function selectCard(uid){
+    if(state.animating) return;
+    const index=state.selected.indexOf(uid);
+    if(index>=0) state.selected.splice(index,1);
+    else if(state.selected.length<2) state.selected.push(uid);
+    else { state.selected.shift(); state.selected.push(uid); }
+    renderHand(); renderSyntax();
+  }
+  function undo(){ state.selected=[]; renderHand(); renderSyntax(); }
+  async function invoke(){
+    if(state.selected.length!==2 || state.animating) return;
+    state.animating=true;
+    const first=state.hand.find(c=>c.uid===state.selected[0]);
+    const second=state.hand.find(c=>c.uid===state.selected[1]);
+    const a=dominant(spec(first).vector), b=dominant(spec(second).vector), key=a+b;
+    const pair=PAIRS[key];
+    const omen=state.omens[state.activeOmen];
+    const ctx={ first,second,a,b,key,mag:3+spec(first).pips+spec(second).pips+(first.karma>=3?1.5:0)+(second.karma>=3?1.5:0),residue:{r:0,g:0,p:0,b:0},freeze:false,pocket
