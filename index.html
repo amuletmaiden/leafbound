@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#000000">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <meta name="description" content="LEAFBOUND — a roguelite deckbuilder where cards write the laws that decide which futures may occur.">
+  <title>LEAFBOUND — The Living Constitution</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <canvas id="world" aria-hidden="true"></canvas>
+  <div id="grain" aria-hidden="true"></div>
+
+  <main id="app">
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+        <div>
+          <div class="eyebrow">A LEAF GAME</div>
+          <h1>LEAFBOUND</h1>
+        </div>
+      </div>
+
+      <div class="runline" aria-label="Run progress">
+        <span class="run-node active" data-node="0">I</span>
+        <i></i>
+        <span class="run-node" data-node="1">II</span>
+        <i></i>
+        <span class="run-node" data-node="2">III</span>
+      </div>
+
+      <div class="top-actions">
+        <button id="codexButton" class="icon-button" title="Open the Living Ledger" aria-label="Open the Living Ledger">⌘</button>
+        <button id="audioButton" class="icon-button" title="Toggle generative sound" aria-label="Toggle generative sound">◌</button>
+        <button id="newRunButton" class="quiet-button">NEW RUN</button>
+      </div>
+    </header>
+
+    <section id="battleScreen" class="screen active">
+      <aside class="player-rail panel">
+        <div class="portrait self-portrait">
+          <div class="portrait-core"></div>
+          <div class="portrait-ring"></div>
+        </div>
+        <div class="rail-title">THE SELF</div>
+
+        <div class="meter-group">
+          <div class="meter-label"><span>COHERENCE</span><strong id="playerHpText">48 / 48</strong></div>
+          <div class="meter"><i id="playerHpBar"></i></div>
+        </div>
+
+        <div class="stat-grid">
+          <div><span>WARD</span><strong id="blockText">0</strong></div>
+          <div><span>BREATH</span><strong id="energyText">4</strong></div>
+          <div><span>PRECEDENT</span><strong id="precedentText">0</strong></div>
+          <div><span>LAW</span><strong id="lawText">0</strong></div>
+        </div>
+
+        <div class="pace-control">
+          <div class="meter-label"><span>CLOCK OF POWER</span><strong id="paceText">1×</strong></div>
+          <input id="paceInput" type="range" min="0.5" max="2" value="1" step="0.25" aria-label="Animation pace">
+          <p>Time changes presentation, never outcome.</p>
+        </div>
+      </aside>
+
+      <section class="arena">
+        <div class="enemy-heading">
+          <div>
+            <div id="enemyKind" class="eyebrow">CONDITION I</div>
+            <h2 id="enemyName">THE LAWLESS GYRE</h2>
+          </div>
+          <div class="enemy-vital">
+            <span id="enemyHpText">42 / 42</span>
+            <div class="meter enemy-meter"><i id="enemyHpBar"></i></div>
+          </div>
+        </div>
+
+        <div id="enemyStage" class="enemy-stage" aria-label="Enemy manifestation">
+          <div id="enemySigil" class="enemy-sigil"></div>
+          <div id="enemyStatus" class="status-row"></div>
+          <div id="floatingLayer" class="floating-layer" aria-hidden="true"></div>
+        </div>
+
+        <section class="spectrum-wrap panel">
+          <div class="section-heading">
+            <div>
+              <div class="eyebrow">POSSIBILITY SPECTRUM</div>
+              <h3>Coherent futures</h3>
+            </div>
+            <p id="spectrumHint">Write law to make futures impossible.</p>
+          </div>
+          <div id="spectrum" class="spectrum"></div>
+        </section>
+      </section>
+
+      <aside class="ledger-rail panel">
+        <div class="section-heading compact">
+          <div>
+            <div class="eyebrow">CHORUS OF PRECEDENT</div>
+            <h3>Living law</h3>
+          </div>
+        </div>
+        <div id="precedentList" class="precedent-list">
+          <div class="empty-copy">Repeat a relation and the world will remember it.</div>
+        </div>
+        <div class="rule-note">
+          <span class="rule-icon">◇</span>
+          <p>Adjacent colors cannot touch themselves. A collision is permitted only by exceptional text.</p>
+        </div>
+      </aside>
+
+      <section class="constitution panel">
+        <div class="constitution-head">
+          <div>
+            <div class="eyebrow">THE LIVING CONSTITUTION</div>
+            <h3 id="lawName">An unwritten law</h3>
+          </div>
+          <div class="constitution-actions">
+            <button id="undoButton" class="quiet-button" disabled>UNDO</button>
+            <button id="restButton" class="primary-button">REST / RESOLVE</button>
+          </div>
+        </div>
+        <div id="clause" class="clause" aria-label="Current four-card law">
+          <button class="clause-slot" data-slot="0" disabled><span>I</span></button>
+          <i>→</i>
+          <button class="clause-slot" data-slot="1" disabled><span>II</span></button>
+          <i>→</i>
+          <button class="clause-slot" data-slot="2" disabled><span>III</span></button>
+          <i>→</i>
+          <button class="clause-slot" data-slot="3" disabled><span>IV</span></button>
+        </div>
+        <div id="pairMessage" class="pair-message">Choose the first gesture.</div>
+      </section>
+
+      <section class="hand-wrap">
+        <div class="hand-header">
+          <div><span>HAND</span><strong id="deckText">DRAW 0 · DISCARD 0</strong></div>
+          <p>Cards ferment through use. Rot is change, not punishment.</p>
+        </div>
+        <div id="hand" class="hand" aria-label="Card hand"></div>
+      </section>
+    </section>
+
+    <section id="rewardScreen" class="screen modal-screen" aria-live="polite">
+      <div class="modal-card reward-card panel">
+        <div class="eyebrow">THE WORLD BRANCHES</div>
+        <h2>Choose what becomes possible.</h2>
+        <p id="rewardCopy">One gesture enters your constitution. The others never existed.</p>
+        <div id="rewardCards" class="reward-cards"></div>
+      </div>
+    </section>
+
+    <section id="titleScreen" class="screen modal-screen active title-screen">
+      <div class="title-orbit" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+      <div class="title-card">
+        <div class="eyebrow">A ROGUELITE DECKBUILDER BUILT FROM LEAF</div>
+        <h2><span>THE LIVING</span><br>CONSTITUTION</h2>
+        <p>Do not attack a monster. Write a world in which its violence cannot occur.</p>
+        <button id="beginButton" class="primary-button large">ENTER THE WORLD</button>
+        <div class="title-rules">
+          <span><b>1</b> Arrange gestures into four-part laws.</span>
+          <span><b>2</b> Each relation collapses incompatible futures.</span>
+          <span><b>3</b> Repetition becomes precedent. Use becomes fermentation.</span>
+        </div>
+      </div>
+    </section>
+
+    <section id="endingScreen" class="screen modal-screen">
+      <div class="modal-card ending-card panel">
+        <div class="eyebrow">THE CROWN REMAINS OPEN</div>
+        <h2>You legislated outward.</h2>
+        <p id="endingCopy"></p>
+        <div id="endingStats" class="ending-stats"></div>
+        <button id="againButton" class="primary-button large">WRITE ANOTHER WORLD</button>
+      </div>
+    </section>
+  </main>
+
+  <dialog id="codexDialog" class="codex-dialog">
+    <button id="closeCodex" class="icon-button close-button" aria-label="Close">×</button>
+    <div class="eyebrow">THE LIVING LEDGER</div>
+    <h2>What the world remembers</h2>
+    <div id="codexBody" class="codex-body"></div>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="game.js"></script>
+</body>
+</html>
