@@ -1,0 +1,27 @@
+e.width=innerWidth+'px';c.style.height=innerHeight+'px';ctx.setTransform(d,0,0,d,0,0);stars=Array.from({length:Math.min(180,Math.floor(innerWidth*innerHeight/8000))},()=>({x:Math.random()*innerWidth,y:Math.random()*innerHeight,r:Math.random()*1.3+.2,s:Math.random()*.15+.03,o:Math.random()*.6+.15}));}; resize(); addEventListener('resize',resize);
+    const draw=()=>{ctx.clearRect(0,0,innerWidth,innerHeight);for(const s of stars){s.y+=s.s;if(s.y>innerHeight)s.y=0;ctx.globalAlpha=s.o;ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fill();}ctx.globalAlpha=1;requestAnimationFrame(draw)};draw();
+  }
+  function initTitle(){
+    $('#titleGoddesses').innerHTML=Object.values(GODDESSES).map(g=>`<div class="title-goddess">${portraitSVG(g,{full:true,halo:true})}<small>${g.name.toUpperCase()}</small></div>`).join('');
+    updateHeader();
+  }
+  function showScreen(name){
+    state.screen=name; $$('.screen').forEach(s=>s.classList.remove('active')); $(`#${name}Screen`).classList.add('active');
+  }
+  function toast(text){ const t=$('#toast');t.textContent=text;t.classList.add('show');clearTimeout(toast.timer);toast.timer=setTimeout(()=>t.classList.remove('show'),1800); }
+  function wait(ms){ return new Promise(r=>setTimeout(r,ms)); }
+  function roman(n){ return ['I','II','III','IV','V'][n-1]||n; }
+
+  $('#beginButton').addEventListener('click',startRun);
+  $('#restartButton').addEventListener('click',()=>{ $('#endModal').classList.remove('open'); startRun(); });
+  $('#brand').addEventListener('click',()=>{ $$('.modal').forEach(m=>m.classList.remove('open')); showScreen('title'); });
+  $('#undoButton').addEventListener('click',undo); $('#invokeButton').addEventListener('click',invoke);
+  $('#codexButton').addEventListener('click',()=>openCodex());
+  $('#glossToggle').addEventListener('click',()=>{ state.gloss=!state.gloss;document.body.classList.toggle('gloss',state.gloss);$('#glossToggle').setAttribute('aria-pressed',state.gloss); });
+  $('#soundButton').addEventListener('click',()=>{ state.sound=!state.sound;$('#soundButton').setAttribute('aria-pressed',state.sound);toast(state.sound?'The cards may sing.':'The cards fall silent.'); });
+  $$('[data-close]').forEach(b=>b.addEventListener('click',()=>$('#'+b.dataset.close).classList.remove('open')));
+  $$('.codex-tabs button').forEach(b=>b.addEventListener('click',()=>renderCodex(b.dataset.tab)));
+  document.addEventListener('keydown',e=>{ if(e.key==='Escape') $$('.modal').forEach(m=>m.classList.remove('open')); if(state.screen==='game'&&!state.animating){ if(e.key==='1'||e.key==='2'||e.key==='3'||e.key==='4'||e.key==='5') state.hand[+e.key-1]&&selectCard(state.hand[+e.key-1].uid); if(e.key==='Enter'&&state.selected.length===2) invoke(); if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z')undo(); }});
+
+  initSky(); initTitle();
+})();
