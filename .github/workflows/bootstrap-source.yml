@@ -4,7 +4,7 @@ on:
   push:
     branches: [main]
     paths:
-      - '.bootstrap/source.b64'
+      - '.bootstrap/source.part.03'
 
 permissions:
   contents: write
@@ -18,7 +18,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          base64 --decode .bootstrap/source.b64 > /tmp/leafbound-source.zip
+          cat .bootstrap/source.part.* | base64 --decode > /tmp/leafbound-source.zip
           unzip -o -q /tmp/leafbound-source.zip -d .
           rm -rf .bootstrap
           rm -f .github/workflows/bootstrap-source.yml
