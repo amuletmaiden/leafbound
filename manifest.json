@@ -1,9 +1,9 @@
 {
-  "name": "LEAFBOUND — The Living Constitution",
+  "name": "LEAFBOUND — The Living Tarot",
   "short_name": "LEAFBOUND",
-  "start_url": "./index.html",
+  "start_url": "./",
   "display": "standalone",
-  "background_color": "#000000",
-  "theme_color": "#000000",
+  "background_color": "#080812",
+  "theme_color": "#080812",
   "icons": [{"src":"icon.svg","sizes":"any","type":"image/svg+xml"}]
 }
