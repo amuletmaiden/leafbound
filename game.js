@@ -1,1182 +1,451 @@
 (() => {
   'use strict';
 
-  const $ = (selector) => document.querySelector(selector);
-  const $$ = (selector) => [...document.querySelectorAll(selector)];
-  const clamp = (n, lo, hi) => Math.max(lo, Math.min(hi, n));
-  const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
-  const shuffle = (arr) => {
-    const copy = [...arr];
-    for (let i = copy.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [copy[i], copy[j]] = [copy[j], copy[i]];
-    }
-    return copy;
+  const $ = (s, root = document) => root.querySelector(s);
+  const $$ = (s, root = document) => [...root.querySelectorAll(s)];
+  const clamp = (n, a, b) => Math.max(a, Math.min(b, n));
+  const sum = (v) => v.r + v.g + v.p + v.b;
+  const COLORS = { r: '#ff2037', g: '#00ff76', p: '#ff00ff', b: '#00c8ff' };
+  const COLOR_NAMES = { r: 'HEART', g: 'LOVE', p: 'POWER', b: 'TEMPLE' };
+  const GODDESSES = {
+    r: { name: 'Ruby', title: 'THE SOVEREIGN SELF', hair: '#e51e3b', hair2: '#7b0718', eye: '#ffd4cc', accent: COLORS.r, style: 'flare' },
+    g: { name: 'Garden Maid', title: 'THE BELOVED WITNESS', hair: '#42e891', hair2: '#087c4b', eye: '#072d20', accent: COLORS.g, style: 'braid' },
+    p: { name: 'Moth Princess', title: 'THE BEAUTIFUL CHANGE', hair: '#ff71e8', hair2: '#9c168e', eye: '#4d083f', accent: COLORS.p, style: 'wing' },
+    b: { name: 'Swan', title: 'THE STILL LAW', hair: '#73ddff', hair2: '#12679b', eye: '#062e4c', accent: COLORS.b, style: 'veil' }
   };
-  const uid = () => Math.random().toString(36).slice(2, 9);
+  const ZONES = {
+    hands: { glyph: '✋', name: 'Hands', copy: 'Immediate agency. Same-zone rites become decisive.' },
+    eyes: { glyph: '◉', name: 'Eyes', copy: 'Sight and revelation. The target field becomes easier to read.' },
+    lips: { glyph: '⌒', name: 'Lips', copy: 'Invocation. Repeated pair-laws gather force.' },
+    pockets: { glyph: '▱', name: 'Pockets', copy: 'Delay and storage. Surplus can be kept rather than destroyed.' }
+  };
 
-  const SUITS = {
-    heart:  { name: 'HEART',  color: '#ff2037', glyph: '●', concept: 'the self · blood · origin' },
-    love:   { name: 'LOVE',   color: '#00ff76', glyph: '◉', concept: 'attention · light · mercy' },
-    power:  { name: 'POWER',  color: '#ff00ff', glyph: '↻', concept: 'change · rot · transmutation' },
-    temple: { name: 'TEMPLE', color: '#00c8ff', glyph: '◇', concept: 'law · vessel · gravity' }
+  const CARD_LIBRARY = {
+    sun:      { glyph: '☉', name: 'Sun', color: 'r', pips: 2, zone: 'hands', vector: {r:7,g:1,p:0,b:2}, copy: 'Declares the acting self and produces motion.' },
+    eye:      { glyph: '◉', name: 'Green Eye', color: 'g', pips: 2, zone: 'eyes', vector: {r:0,g:7,p:1,b:2}, copy: 'Sees connection, living deficits, and concealed desire.' },
+    mirror:   { glyph: '◇', name: 'Mirror', color: 'b', pips: 2, zone: 'eyes', vector: {r:1,g:1,p:1,b:7}, copy: 'Makes structure visible and lets a condition compare itself.' },
+    flame:    { glyph: '♨', name: 'Flame', color: 'r', pips: 3, zone: 'lips', vector: {r:8,g:0,p:2,b:0}, copy: 'A spoken motion. Strong, bright, and difficult to retract.' },
+    garden:   { glyph: '❈', name: 'Garden', color: 'g', pips: 3, zone: 'hands', vector: {r:1,g:8,p:1,b:0}, copy: 'Fills absence with a living relation.' },
+    swan:     { glyph: '♧', name: 'Swan', color: 'b', pips: 3, zone: 'pockets', vector: {r:0,g:2,p:0,b:8}, copy: 'Carries law inside softness and stores stillness.' },
+    moth:     { glyph: 'ϟ', name: 'Moth', color: 'p', pips: 2, zone: 'lips', vector: {r:1,g:2,p:7,b:0}, copy: 'Turns what is already happening into another kind of happening.' },
+    ruby:     { glyph: '◆', name: 'Ruby', color: 'r', pips: 1, zone: 'pockets', vector: {r:6,g:0,p:2,b:2}, copy: 'A portable self. It can be kept, lost, or incarnated.' },
+    birds:    { glyph: '⋀⋁', name: 'Birds', color: 'g', split: 'p', pips: 2, zone: 'lips', vector: {r:0,g:5,p:4,b:1}, copy: 'Connection taking flight through transformation.' },
+    moon:     { glyph: '☾', name: 'Moon', color: 'b', split: 'p', pips: 2, zone: 'eyes', vector: {r:0,g:1,p:4,b:5}, copy: 'Law seen indirectly: a mirror that changes what it reflects.' },
+    tower:    { glyph: '⌂', name: 'Tower', color: 'b', split: 'r', pips: 3, zone: 'hands', vector: {r:3,g:0,p:0,b:7}, copy: 'Motion made architectural. A force that remembers its boundary.' },
+    butterfly:{ glyph: '⋈', name: 'Butterfly', color: 'p', split: 'g', pips: 3, zone: 'hands', vector: {r:0,g:4,p:6,b:0}, copy: 'A completed metamorphosis that can seed another.' },
+    lips:     { glyph: '⌒', name: 'Lips', color: 'p', split: 'r', pips: 1, zone: 'lips', vector: {r:3,g:0,p:5,b:2}, copy: 'The transformation caused by saying a thing aloud.' },
+    pocket:   { glyph: '▱', name: 'Pocket', color: 'b', split: 'g', pips: 1, zone: 'pockets', vector: {r:0,g:3,p:1,b:6}, copy: 'A hidden place where an unfinished operation may persist.' },
+    nova:     { glyph: '✺', name: 'Nova', color: 'r', split: 'p', pips: 3, zone: 'eyes', vector: {r:5,g:0,p:5,b:0}, copy: 'A self transformed so quickly that it becomes an event.' },
+    meridian: { glyph: '⊕', name: 'Meridian', color: 'g', split: 'b', pips: 2, zone: 'pockets', vector: {r:0,g:5,p:0,b:5}, copy: 'A two-sided path: green on one face, blue on the other.' },
+    seed:     { glyph: '•', name: 'Seed', color: 'g', pips: 1, zone: 'pockets', vector: {r:1,g:6,p:2,b:1}, copy: 'Small magnitude, enormous futurity.' },
+    eclipse:  { glyph: '◑', name: 'Eclipse', color: 'p', split: 'b', pips: 3, zone: 'eyes', vector: {r:1,g:0,p:5,b:4}, copy: 'A transformation whose law is temporarily hidden.' }
   };
+
+  const STARTER = ['sun','eye','mirror','flame','garden','swan','moth']; // RGBRGBP
+  const REWARDS = ['ruby','birds','moon','tower','butterfly','lips','pocket','nova','meridian','seed','eclipse'];
 
   const PAIRS = {
-    'heart>love': {
-      name: 'The Heart Is Attended',
-      copy: 'The self becomes visible and recovers.',
-      apply(scale) { healPlayer(Math.ceil(3 * scale)); }
-    },
-    'love>heart': {
-      name: 'The Beloved Self',
-      copy: 'Attention returns as shelter.',
-      apply(scale) { gainBlock(Math.ceil(4 * scale)); }
-    },
-    'heart>power': {
-      name: 'Blood Ferments',
-      copy: 'The self becomes fuel for change.',
-      apply(scale) { damageEnemy(Math.ceil(3 * scale), 'power'); state.player.law += 1; }
-    },
-    'power>heart': {
-      name: 'A New Heart',
-      copy: 'Rot completes its circuit as life.',
-      apply(scale) { healPlayer(Math.ceil(2 * scale)); drawCards(1); }
-    },
-    'heart>temple': {
-      name: 'The Sovereign Clause',
-      copy: 'The self is written into the foundation.',
-      apply(scale) { gainBlock(Math.ceil(5 * scale)); }
-    },
-    'temple>heart': {
-      name: 'Law Incarnate',
-      copy: 'The vessel becomes a body with force.',
-      apply(scale) { state.player.strength += Math.ceil(2 * scale); }
-    },
-    'love>power': {
-      name: 'The Dream Decays',
-      copy: 'What is seen becomes vulnerable to change.',
-      apply(scale) { state.enemy.mark += Math.ceil(2 * scale); }
-    },
-    'power>love': {
-      name: 'Rot Blossoms',
-      copy: 'Decay flowers rather than ending.',
-      apply(scale) {
-        const fermented = countFermented();
-        healPlayer(Math.max(2, Math.ceil((2 + fermented) * scale)));
-      }
-    },
-    'love>temple': {
-      name: 'The Witnessed Law',
-      copy: 'The gentlest remaining future is held open.',
-      apply(scale) { softenFutures(Math.ceil(2 * scale)); }
-    },
-    'temple>love': {
-      name: 'The Temple Opens',
-      copy: 'Law makes room for mercy.',
-      apply(scale) { gainBlock(Math.ceil(3 * scale)); state.player.mercy += 1; }
-    },
-    'power>temple': {
-      name: 'Change Becomes Law',
-      copy: 'A gesture repeats because the world now expects it.',
-      apply(scale, card) { repeatCardHalf(card, scale); }
-    },
-    'temple>power': {
-      name: 'Law Unwrites Itself',
-      copy: 'One coherent future loses permission to exist.',
-      apply(scale) { collapseOneFuture('precedent'); damageEnemy(Math.ceil(2 * scale), 'temple'); }
-    }
+    rr:{ name:'RUBY ASCENDANT', girl:'The Ruby Queen', copy:'The self asserts the exact amount of motion it requires.' },
+    rg:{ name:'THE AWAKENING GARDEN', girl:'Garden Ruby', copy:'Strength enters connection; what was dormant begins to answer.' },
+    rp:{ name:'BLOOD FERMENTS', girl:'The Wine Princess', copy:'Motion becomes transformation without ceasing to be itself.' },
+    rb:{ name:'THE SOVEREIGN CLAUSE', girl:'Tower Maiden', copy:'The self writes a boundary and makes force inhabitable.' },
+    gr:{ name:'THE BELOVED SELF', girl:'Devoted Maid', copy:'Connection returns to the one who produced it.' },
+    gg:{ name:'THE MAIDEN GARDEN', girl:'The Verdant Maid', copy:'Life fills the deepest absence first.' },
+    gp:{ name:'BIRDS OF CHANGE', girl:'Butterfly Shepherd', copy:'Growth accepts decay and leaves the old shape willingly.' },
+    gb:{ name:'THE SIREN', girl:'Siren of the Green Moon', copy:'Connection travels through distance and draws the field toward desire.' },
+    pr:{ name:'A NEW HEART', girl:'Nova Princess', copy:'Decay completes its circuit and returns as a changed self.' },
+    pg:{ name:'THE CHRYSALIS', girl:'Moth Gardener', copy:'Transformation is kept alive long enough to bloom later.' },
+    pp:{ name:'BEAUTIFUL ROT', girl:'The Pink Empress', copy:'Surplus and deficit exchange masks.' },
+    pb:{ name:'THE SEALED WING', girl:'Veiled Moth', copy:'Change is stored beneath law instead of being lost.' },
+    br:{ name:'LAW INCARNATE', girl:'Ruby Swan', copy:'Stillness grows a body and enters the world as motion.' },
+    bg:{ name:'THE MERMAID', girl:'Mermaid of the Quiet Garden', copy:'Law becomes habitable and smooths every violent difference.' },
+    bp:{ name:'LAW UNWRITES ITSELF', girl:'Mirror Moth', copy:'The most excessive certainty is permitted to disappear.' },
+    bb:{ name:'THE ROUND HORIZON', girl:'The White Swan', copy:'The field becomes still enough to resemble its desire.' }
   };
 
-  const CARDS = {
-    'silence': {
-      name: 'Silence', suit: 'temple', kind: 'ABSENCE',
-      copy: 'Costs one breath. Nothing answers. Even absence occupies a place in law.',
-      effect() { gainBlock(1); }
-    },
-    'first-flame': {
-      name: 'First Flame', suit: 'heart', kind: 'ORIGIN',
-      copy: 'Deal 6. If this begins the law, deal 3 more.',
-      effect(card) { damageEnemy(6 + (state.clause.length === 1 ? 3 : 0), card.suit); }
-    },
-    'heart-withdrawn': {
-      name: 'Heart Withdrawn', suit: 'heart', kind: 'SELF',
-      copy: 'Recover 5 coherence. Fermented: also gain 4 ward.',
-      effect(card) { healPlayer(card.rot >= 3 ? 7 : 5); if (card.rot >= 3) gainBlock(4); }
-    },
-    'red-verdict': {
-      name: 'Red Verdict', suit: 'heart', kind: 'SOVEREIGNTY',
-      copy: 'Deal 5. Gain 2 strength until the turn ends.',
-      effect(card) { damageEnemy(card.rot >= 3 ? 8 : 5, card.suit); state.player.strength += 2; }
-    },
-    'open-eye': {
-      name: 'Open Eye', suit: 'love', kind: 'WITNESS',
-      copy: 'Mark the condition. Every later wound this turn is deeper.',
-      effect(card) { state.enemy.mark += card.rot >= 3 ? 4 : 2; }
-    },
-    'majority-mercy': {
-      name: 'Mercy Is Majority', suit: 'love', kind: 'MERCY',
-      copy: 'Gain 6 ward. Soften every coherent future by 1.',
-      effect(card) { gainBlock(card.rot >= 3 ? 9 : 6); softenFutures(card.rot >= 3 ? 2 : 1); }
-    },
-    'kept-light': {
-      name: 'Kept Light', suit: 'love', kind: 'ATTENTION',
-      copy: 'Recover 3 and draw a gesture. Fermented: the draw costs no breath.',
-      effect(card) { healPlayer(card.rot >= 3 ? 5 : 3); drawCards(1); if (card.rot >= 3) state.player.energy += 1; }
-    },
-    'ferment': {
-      name: 'Ferment', suit: 'power', kind: 'TRANSMUTATION',
-      copy: 'Deal 4. Every gesture already in this law gains one rot.',
-      effect(card) {
-        damageEnemy(card.rot >= 3 ? 7 : 4, card.suit);
-        state.clause.forEach((c) => { if (c.uid !== card.uid) c.rot = clamp(c.rot + 1, 0, 3); });
-      }
-    },
-    'cleave': {
-      name: 'Cleave', suit: 'power', kind: 'BIFURCATION',
-      copy: 'Deal 9 and lose 2 coherence. Fermented: the loss becomes ward.',
-      effect(card) {
-        damageEnemy(card.rot >= 3 ? 13 : 9, card.suit);
-        if (card.rot >= 3) gainBlock(3); else hurtPlayer(2, true);
-      }
-    },
-    'beautiful-rot': {
-      name: 'Beautiful Rot', suit: 'power', kind: 'DECAY',
-      copy: 'Deal 2 for every fermented gesture in your constitution.',
-      effect(card) { damageEnemy(Math.max(3, countFermented() * (card.rot >= 3 ? 4 : 2)), card.suit); }
-    },
-    'blue-grammar': {
-      name: 'Blue Grammar', suit: 'temple', kind: 'FOUNDATION',
-      copy: 'Gain 8 ward. Lawfulness increases future pair effects.',
-      effect(card) { gainBlock(card.rot >= 3 ? 12 : 8); state.player.law += card.rot >= 3 ? 2 : 1; }
-    },
-    'contagious-law': {
-      name: 'Contagious Law', suit: 'temple', kind: 'LEGISLATION',
-      copy: 'Deal 3 for each future already made impossible.',
-      effect(card) {
-        const collapsed = state.futures.filter((f) => !futureCoherent(f)).length;
-        damageEnemy(Math.max(3, collapsed * (card.rot >= 3 ? 5 : 3)), card.suit);
-        state.player.law += 1;
-      }
-    },
-    'dormant-sigil': {
-      name: 'Dormant Sigil', suit: 'temple', kind: 'SILENT DOCTRINE',
-      copy: 'Silently collapse one coherent future. Gain 3 ward.',
-      effect(card) { collapseOneFuture('sigil'); gainBlock(card.rot >= 3 ? 6 : 3); }
-    },
-    'round-horizon': {
-      name: 'Round Horizon', suit: 'temple', kind: 'GEOMETRY',
-      copy: 'Gain 5 ward. Draw one. Your next card may touch its own color.',
-      effect(card) { gainBlock(card.rot >= 3 ? 8 : 5); drawCards(1); state.allowCollision = 1; }
-    },
-    'star-temperance': {
-      name: 'Star Temperance', suit: 'love', kind: 'TEMPERANCE',
-      copy: 'Reduce the force of all coherent futures by 3.',
-      effect(card) { softenFutures(card.rot >= 3 ? 5 : 3); }
-    },
-    'open-crown': {
-      name: 'Open Crown', suit: 'heart', kind: 'ASCENSION',
-      copy: 'Gain 1 breath. Deal 2 for every distinct color in the law.',
-      effect(card) {
-        state.player.energy += 1;
-        const distinct = new Set(state.clause.map((c) => c.suit)).size;
-        damageEnemy(distinct * (card.rot >= 3 ? 4 : 2), card.suit);
-      }
-    },
-    'retrograde-hunger': {
-      name: 'Retrograde Hunger', suit: 'power', kind: 'REVERSAL',
-      copy: 'Reverse your last loss of coherence, then deal that much.',
-      effect(card) {
-        const amount = Math.max(3, state.lastHpLoss || 3);
-        healPlayer(amount);
-        damageEnemy(card.rot >= 3 ? amount + 5 : amount, card.suit);
-      }
-    }
-  };
-
-  const STARTER_DECK = [
-    'first-flame', 'first-flame', 'heart-withdrawn',
-    'open-eye', 'majority-mercy', 'majority-mercy',
-    'ferment', 'cleave',
-    'blue-grammar', 'contagious-law'
-  ];
-  const REWARD_POOL = [
-    'red-verdict', 'kept-light', 'beautiful-rot', 'dormant-sigil',
-    'round-horizon', 'star-temperance', 'open-crown', 'retrograde-hunger'
+  const OMENS = [
+    {id:'orchard',glyph:'☉',name:'Solar Orchard',copy:'Red and green rites carry farther.', apply(ctx){ if ('rg'.includes(ctx.a) || 'rg'.includes(ctx.b)) ctx.mag *= 1.18; }},
+    {id:'moonpool',glyph:'☾',name:'Moon Pool',copy:'The second symbol speaks more loudly.', apply(ctx){ ctx.mag += spec(ctx.second).pips * .65; }},
+    {id:'mothweather',glyph:'ϟ',name:'Moth Weather',copy:'Karma leaves a pink residue.', apply(ctx){ ctx.residue.p += (ctx.first.karma + ctx.second.karma) * .8; }},
+    {id:'swanstair',glyph:'♧',name:'Swan Stair',copy:'Matching places arrest the next drift.', apply(ctx){ if(spec(ctx.first).zone === spec(ctx.second).zone) ctx.freeze = true; }},
+    {id:'birdchoir',glyph:'⋀⋁',name:'Bird Choir',copy:'A repeated pair-law gathers a chorus.', apply(ctx){ ctx.mag += Math.min(4, (state.pairHistory[ctx.key] || 0) * 1.2); }},
+    {id:'pocketeclipse',glyph:'◑',name:'Pocket Eclipse',copy:'What was kept returns with doubled gravity.', apply(ctx){ ctx.pocketMultiplier = 2; }},
+    {id:'glassgarden',glyph:'◇',name:'Glass Garden',copy:'The emptiest color receives a small mercy.', after(){ nudgeLowestDeficit(2.5); }},
+    {id:'silenttower',glyph:'⌂',name:'Silent Tower',copy:'Blue operations hold their shape.', apply(ctx){ if(ctx.a==='b') ctx.freeze = true; }}
   ];
 
   const ENCOUNTERS = [
-    {
-      name: 'THE LAWLESS GYRE', kind: 'CONDITION I', className: 'gyre', hp: 42,
-      intro: 'It turns because nothing has yet told it not to.',
-      futures: [
-        { id: 'spiral-bite', name: 'Spiral Bite', copy: 'The gyre closes around the self.', power: 9, collapse: [{ type: 'suit', suit: 'love' }], effect: { damage: 9 } },
-        { id: 'scatter', name: 'Scatter', copy: 'The hand is thrown into disordered orbit.', power: 5, collapse: [{ type: 'suit', suit: 'temple' }], effect: { damage: 5, discard: 1 } },
-        { id: 'feast-motion', name: 'Feast on Motion', copy: 'Unlawful change feeds the turning.', power: 8, collapse: [{ type: 'pair', pair: 'power>temple' }], effect: { heal: 8 } },
-        { id: 'lawless-rush', name: 'Lawless Rush', copy: 'Without a declared self, force has no boundary.', power: 13, collapse: [{ type: 'first', suit: 'heart' }], effect: { damage: 13 } }
-      ]
-    },
-    {
-      name: 'THE BRIDE OF ICE', kind: 'CONDITION II', className: 'bride', hp: 56,
-      intro: 'She offers a perfect future and freezes every alternative.',
-      futures: [
-        { id: 'ice-vow', name: 'Ice Vow', copy: 'A promise becomes a blade.', power: 12, collapse: [{ type: 'pair', pair: 'heart>love' }], effect: { damage: 12 } },
-        { id: 'dowry-silence', name: 'Dowry of Silence', copy: 'A dead gesture enters the discard.', power: 7, collapse: [{ type: 'suit', suit: 'power' }], effect: { damage: 4, curse: 1 } },
-        { id: 'mirror-kiss', name: 'Mirror Kiss', copy: 'The condition drinks its own reflection.', power: 10, collapse: [{ type: 'pair', pair: 'temple>power' }], effect: { heal: 10 } },
-        { id: 'bridal-veil', name: 'Bridal Veil', copy: 'Beauty conceals a second impact.', power: 8, collapse: [{ type: 'pair', pair: 'love>temple' }], effect: { damage: 8, enemyBlock: 8 } }
-      ]
-    },
-    {
-      name: 'THE STAR-DEVOURER', kind: 'OUTER CONDITION', className: 'devourer', hp: 74,
-      intro: 'Near her, processes do not stop. They un-happen.',
-      futures: [
-        { id: 'devour-star', name: 'Devour the Star', copy: 'Light is eaten before it was emitted.', power: 16, collapse: [{ type: 'suit', suit: 'love' }], effect: { damage: 16 } },
-        { id: 'unhappen', name: 'Unhappen', copy: 'Your most fermented gesture loses one age.', power: 10, collapse: [{ type: 'suit', suit: 'temple' }], effect: { damage: 7, unrot: 1 } },
-        { id: 'retro-hunger', name: 'Retrograde Hunger', copy: 'Her wound becomes yesterday. Yours becomes now.', power: 13, collapse: [{ type: 'pair', pair: 'power>love' }], effect: { damage: 8, heal: 13 } },
-        { id: 'closed-crown', name: 'Closed Crown', copy: 'The world seals around one violent theorem.', power: 14, collapse: [{ type: 'distinct', count: 4 }], effect: { damage: 11, enemyBlock: 10 } }
-      ]
-    }
+    { name:'The Sleeping Gardener', epithet:'Her garden dreams without remembering her.', palette:['#4ff0a0','#104d3d','#00c8ff'], hair:'#55e3a4', hair2:'#0c6a4d', eye:'#143b31', style:'braid', current:{r:8,g:22,p:13,b:57}, target:{r:24,g:48,p:12,b:16}, drift:{r:-1,g:-3,p:2,b:2}, turns:7, threshold:.84, stable:2 },
+    { name:'The Glass Swan', epithet:'Perfect law has made her too beautiful to move.', palette:['#9deaff','#3a83bd','#e5faff'], hair:'#98e7ff', hair2:'#24699d', eye:'#063d63', style:'veil', current:{r:7,g:12,p:8,b:73}, target:{r:21,g:31,p:19,b:29}, drift:{r:-2,g:-1,p:0,b:3}, turns:7, threshold:.86, stable:2 },
+    { name:'The Moth Princess', epithet:'Every possibility is hatching at once.', palette:['#ff85e8','#89167f','#fff0fb'], hair:'#ff82ea', hair2:'#941579', eye:'#550744', style:'wing', current:{r:11,g:18,p:62,b:9}, target:{r:16,g:35,p:34,b:15}, drift:{r:0,g:-2,p:4,b:-2}, turns:8, threshold:.87, stable:2 },
+    { name:'The Star-Devouring Goddess', epithet:'Near her, processes do not stop. They un-happen.', palette:['#ff3155','#ff3ee8','#61dfff'], hair:'#ef4b91', hair2:'#50105d', eye:'#170624', style:'crown', current:{r:44,g:4,p:39,b:13}, target:{r:25,g:25,p:25,b:25}, drift:{r:3,g:-3,p:3,b:-3}, turns:9, threshold:.9, stable:3 }
   ];
 
-  const LEDGER_KEY = 'leafbound_living_ledger_v1';
-  let ledger = loadLedger();
-  let state = null;
-  let history = [];
-  let toastTimer = null;
-  let resolving = false;
-
-  function loadLedger() {
-    try {
-      const parsed = JSON.parse(localStorage.getItem(LEDGER_KEY) || '{}');
-      return {
-        laws: parsed.laws || {},
-        victories: parsed.victories || 0,
-        runs: parsed.runs || 0,
-        denied: parsed.denied || 0,
-        fermented: parsed.fermented || {}
-      };
-    } catch (_) {
-      return { laws: {}, victories: 0, runs: 0, denied: 0, fermented: {} };
-    }
-  }
-
-  function saveLedger() {
-    try { localStorage.setItem(LEDGER_KEY, JSON.stringify(ledger)); } catch (_) {}
-  }
-
-  function makeCard(id, rot = 0) {
-    return { id, uid: uid(), suit: CARDS[id].suit, rot };
-  }
-
-  function createRun() {
-    const runDeck = STARTER_DECK.map((id) => makeCard(id));
-    state = {
-      encounterIndex: 0,
-      runDeck,
-      drawPile: [],
-      discard: [],
-      hand: [],
-      clause: [],
-      futures: [],
-      forcedCollapsed: [],
-      turn: 0,
-      player: {
-        hp: 48, maxHp: 48, block: 0, energy: 4,
-        strength: 0, law: 0, mercy: 0
-      },
-      enemy: null,
-      precedents: {},
-      allowCollision: 0,
-      cardsPlayed: 0,
-      futuresDenied: 0,
-      lawsWritten: 0,
-      lastHpLoss: 0,
-      animationPace: 1
-    };
-    ledger.runs += 1;
-    saveLedger();
-    history = [];
-    startEncounter(0);
-  }
-
-  function startEncounter(index) {
-    state.encounterIndex = index;
-    const blueprint = ENCOUNTERS[index];
-    state.enemy = {
-      name: blueprint.name,
-      kind: blueprint.kind,
-      className: blueprint.className,
-      hp: blueprint.hp,
-      maxHp: blueprint.hp,
-      block: 0,
-      mark: 0,
-      softened: 0,
-      intro: blueprint.intro
-    };
-    state.drawPile = shuffle(state.runDeck.map((card) => ({ ...card })));
-    state.discard = [];
-    state.hand = [];
-    state.clause = [];
-    state.turn = 0;
-    state.allowCollision = 0;
-    resolving = false;
-    nextTurn(true);
-    showToast(blueprint.intro);
-    updateRunline();
-    burstForSuit(index === 0 ? 'power' : index === 1 ? 'love' : 'heart', 45);
-  }
-
-  function nextTurn(first = false) {
-    if (!first) {
-      state.discard.push(...state.hand, ...state.clause);
-      state.hand = [];
-      state.clause = [];
-    }
-    state.turn += 1;
-    state.player.block = Math.ceil(state.player.block * 0.2);
-    state.player.energy = 4;
-    state.player.strength = 0;
-    state.enemy.block = Math.ceil(state.enemy.block * 0.25);
-    state.enemy.softened = 0;
-    state.allowCollision = 0;
-    state.forcedCollapsed = [];
-    state._lastDenied = 0;
-    generateFutures();
-    applyChorus();
-    drawCards(5);
-    history = [];
-    resolving = false;
-    render();
-  }
-
-  function generateFutures() {
-    const base = ENCOUNTERS[state.encounterIndex].futures;
-    state.futures = base.map((future) => ({
-      ...future,
-      collapse: future.collapse.map((rule) => ({ ...rule })),
-      effect: { ...future.effect },
-      turnPower: Math.max(0, future.power + (state.turn - 1) * (state.encounterIndex + 1))
-    }));
-  }
-
-  function drawCards(count) {
-    for (let i = 0; i < count; i++) {
-      if (state.drawPile.length === 0 && state.discard.length) {
-        state.drawPile = shuffle(state.discard);
-        state.discard = [];
-      }
-      if (!state.drawPile.length) break;
-      state.hand.push(state.drawPile.pop());
-    }
-  }
-
-  function snapshotState() {
-    return JSON.stringify({
-      state,
-      resolving
-    });
-  }
-
-  function restoreSnapshot(json) {
-    const saved = JSON.parse(json);
-    state = saved.state;
-    resolving = saved.resolving;
-    render();
-  }
-
-  function cardCanPlay(card) {
-    if (resolving || state.player.energy < 1 || state.clause.length >= 4) return false;
-    const last = state.clause[state.clause.length - 1];
-    if (last && last.suit === card.suit && state.allowCollision <= 0) return false;
-    return true;
-  }
-
-  function playCard(uidValue) {
-    const index = state.hand.findIndex((card) => card.uid === uidValue);
-    if (index < 0) return;
-    const card = state.hand[index];
-    if (!cardCanPlay(card)) {
-      showToast('The same color cannot touch itself.');
-      pulseInvalid(card.suit);
-      return;
-    }
-
-    history.push(snapshotState());
-    state.hand.splice(index, 1);
-    state.clause.push(card);
-    state.player.energy -= 1;
-    if (state.allowCollision > 0) state.allowCollision -= 1;
-    state.cardsPlayed += 1;
-
-    const beforeRot = card.rot;
-    card.rot = clamp(card.rot + 1, 0, 3);
-    syncRunCard(card);
-    if (beforeRot < 3 && card.rot === 3) {
-      ledger.fermented[card.id] = (ledger.fermented[card.id] || 0) + 1;
-      saveLedger();
-      showToast(`${CARDS[card.id].name} has fermented.`);
-      burstForSuit(card.suit, 36);
-    }
-
-    CARDS[card.id].effect(card);
-    const previous = state.clause[state.clause.length - 2];
-    if (previous) applyPair(previous, card);
-    updateFutureDenials();
-    burstForSuit(card.suit, 20);
-    sound.playSuit(card.suit);
-    render();
-
-    if (state.player.hp <= 0) {
-      setTimeout(loseRun, 350 / state.animationPace);
-      return;
-    }
-    if (state.enemy.hp <= 0) {
-      setTimeout(winEncounter, 500 / state.animationPace);
-      return;
-    }
-    if (state.clause.length === 4 || state.player.energy <= 0) {
-      setTimeout(resolveLaw, 500 / state.animationPace);
-    }
-  }
-
-  function syncRunCard(card) {
-    const original = state.runDeck.find((c) => c.uid === card.uid);
-    if (original) original.rot = card.rot;
-  }
-
-  function applyPair(a, b) {
-    const key = `${a.suit}>${b.suit}`;
-    const pair = PAIRS[key];
-    if (!pair) return;
-    const prior = state.precedents[key] || 0;
-    const scale = 1 + prior * 0.24 + state.player.law * 0.05;
-    pair.apply(scale, b);
-    state.precedents[key] = prior + 1;
-    state.player.law += prior >= 1 ? 1 : 0;
-    $('#pairMessage').textContent = prior
-      ? `${pair.name} — precedent ×${prior + 1}`
-      : `${pair.name} — the world notices.`;
-    if (prior >= 1) sound.chorus();
-  }
-
-  function repeatCardHalf(card, scale) {
-    const def = CARDS[card.id];
-    const savedStrength = state.player.strength;
-    state.player.strength = Math.floor(state.player.strength * 0.5);
-    const hpBefore = state.enemy.hp;
-    const blockBefore = state.player.block;
-    def.effect({ ...card, rot: Math.min(card.rot, 2) });
-    const damage = Math.max(0, hpBefore - state.enemy.hp);
-    const block = Math.max(0, state.player.block - blockBefore);
-    if (scale < 1.4) {
-      if (damage > 0) state.enemy.hp += Math.floor(damage * 0.5);
-      if (block > 0) state.player.block -= Math.floor(block * 0.5);
-    }
-    state.player.strength = savedStrength;
-  }
-
-  function futureCoherent(future) {
-    if (state.forcedCollapsed.includes(future.id)) return false;
-    const suits = state.clause.map((card) => card.suit);
-    const pairs = state.clause.slice(1).map((card, i) => `${state.clause[i].suit}>${card.suit}`);
-    return !future.collapse.some((rule) => {
-      if (rule.type === 'suit') return suits.includes(rule.suit);
-      if (rule.type === 'pair') return pairs.includes(rule.pair);
-      if (rule.type === 'first') return suits[0] === rule.suit;
-      if (rule.type === 'last') return suits[suits.length - 1] === rule.suit;
-      if (rule.type === 'distinct') return new Set(suits).size >= rule.count;
-      return false;
-    });
-  }
-
-  function updateFutureDenials() {
-    const denied = state.futures.filter((f) => !futureCoherent(f)).length;
-    const previousDenied = state._lastDenied || 0;
-    if (denied > previousDenied) {
-      const delta = denied - previousDenied;
-      state.futuresDenied += delta;
-      ledger.denied += delta;
-      saveLedger();
-      if (state.player.law > 0) damageEnemy(delta * state.player.law, 'temple');
-      showToast(delta > 1 ? `${delta} futures became impossible.` : 'A future became impossible.');
-    }
-    state._lastDenied = denied;
-  }
-
-  function collapseOneFuture(source) {
-    const coherent = state.futures.filter((f) => futureCoherent(f));
-    if (!coherent.length) return;
-    const target = coherent.reduce((best, f) => (f.turnPower > best.turnPower ? f : best), coherent[0]);
-    state.forcedCollapsed.push(target.id);
-    state.futuresDenied += 1;
-    ledger.denied += 1;
-    saveLedger();
-    if (source === 'sigil') showToast(`${target.name} falls under silent doctrine.`);
-  }
-
-  function softenFutures(amount) {
-    state.enemy.softened += amount;
-  }
-
-  function applyChorus() {
-    const chorus = Object.values(state.precedents).reduce((sum, count) => sum + Math.max(0, count - 1), 0);
-    if (chorus > 0) {
-      state.player.block += chorus;
-      state.player.law += Math.floor(chorus / 3);
-      showToast(`The chorus grants ${chorus} ward.`);
-    }
-  }
-
-  function resolveLaw() {
-    if (resolving || state.enemy.hp <= 0) return;
-    resolving = true;
-    state.lawsWritten += 1;
-    const pattern = state.clause.map((card) => card.suit).join('>') || 'silence';
-    const lawName = generateLawName();
-    if (!ledger.laws[pattern]) ledger.laws[pattern] = { name: lawName, count: 0 };
-    ledger.laws[pattern].count += 1;
-    saveLedger();
-
-    const coherent = state.futures.filter((future) => futureCoherent(future));
-    if (coherent.length === 0) {
-      showToast('PARADOX: no violent future remains coherent.');
-      floatText('PARADOX', 'var(--gold)');
-      damageEnemy(12 + state.player.law * 2, 'temple');
-      gainBlock(5 + state.player.mercy * 2);
-      sound.paradox();
-      if (state.enemy.hp <= 0) {
-        setTimeout(winEncounter, 700 / state.animationPace);
-      } else {
-        setTimeout(() => nextTurn(false), 850 / state.animationPace);
-      }
-      return;
-    }
-
-    const weighted = [];
-    coherent.forEach((future) => {
-      const weight = Math.max(1, 7 - future.turnPower / 3);
-      for (let i = 0; i < Math.round(weight); i++) weighted.push(future);
-    });
-    const chosen = pick(weighted.length ? weighted : coherent);
-    renderSpectrum(chosen.id);
-    showToast(`${chosen.name} actualizes.`);
-    setTimeout(() => {
-      enactFuture(chosen);
-      if (state.player.hp <= 0) loseRun();
-      else if (state.enemy.hp <= 0) winEncounter();
-      else setTimeout(() => nextTurn(false), 650 / state.animationPace);
-    }, 620 / state.animationPace);
-  }
-
-  function enactFuture(future) {
-    const effect = future.effect;
-    const force = Math.max(0, (effect.damage || 0) + state.turn - 1 - state.enemy.softened);
-    if (force) hurtPlayer(force);
-    if (effect.heal) healEnemy(effect.heal + Math.floor(state.turn / 2));
-    if (effect.enemyBlock) {
-      state.enemy.block += effect.enemyBlock;
-      floatText(`+${effect.enemyBlock} CROWN`, SUITS.temple.color);
-    }
-    if (effect.discard && state.hand.length) {
-      const removed = state.hand.splice(Math.floor(Math.random() * state.hand.length), 1)[0];
-      state.discard.push(removed);
-      showToast(`${CARDS[removed.id].name} is scattered.`);
-    }
-    if (effect.curse) {
-      const curse = makeCard('heart-withdrawn');
-      curse.id = 'silence';
-      curse.suit = 'temple';
-      state.discard.push(curse);
-      showToast('A silence enters the discard.');
-    }
-    if (effect.unrot) {
-      const candidates = state.runDeck.filter((card) => card.rot > 0);
-      if (candidates.length) {
-        const target = candidates.reduce((best, card) => card.rot > best.rot ? card : best, candidates[0]);
-        target.rot -= 1;
-        for (const zone of [state.hand, state.drawPile, state.discard, state.clause]) {
-          const copy = zone.find((card) => card.uid === target.uid);
-          if (copy) copy.rot = target.rot;
-        }
-        showToast(`${CARDS[target.id].name} is made younger.`);
-      }
-    }
-    render();
-  }
-
-  function generateLawName() {
-    if (!state.clause.length) return 'The Law of Silence';
-    const first = SUITS[state.clause[0].suit].name;
-    const last = SUITS[state.clause[state.clause.length - 1].suit].name;
-    const distinct = new Set(state.clause.map((c) => c.suit)).size;
-    const prefixes = {
-      HEART: ['Sovereign', 'Red', 'Inward'],
-      LOVE: ['Attending', 'Merciful', 'Luminous'],
-      POWER: ['Fermented', 'Turning', 'Mortal'],
-      TEMPLE: ['Blue', 'Hermetic', 'Legislative']
-    };
-    const nouns = {
-      HEART: ['Self', 'Blood', 'Origin'],
-      LOVE: ['Witness', 'Dream', 'Mercy'],
-      POWER: ['Change', 'Rot', 'Bifurcation'],
-      TEMPLE: ['Temple', 'Grammar', 'Horizon']
-    };
-    const prefix = prefixes[first][state.lawsWritten % prefixes[first].length];
-    const noun = nouns[last][(state.turn + distinct) % nouns[last].length];
-    return distinct === 4 ? `The Open Crown of ${noun}` : `The ${prefix} ${noun}`;
-  }
-
-  function damageEnemy(amount, suit = 'heart') {
-    amount = Math.max(0, Math.round(amount + state.player.strength + state.enemy.mark));
-    if (amount <= 0) return;
-    const absorbed = Math.min(state.enemy.block, amount);
-    state.enemy.block -= absorbed;
-    const dealt = amount - absorbed;
-    state.enemy.hp = clamp(state.enemy.hp - dealt, 0, state.enemy.maxHp);
-    if (state.enemy.mark > 0) state.enemy.mark = Math.max(0, state.enemy.mark - 1);
-    floatText(`−${dealt}`, SUITS[suit]?.color || '#fff');
-    hurtEnemyVisual();
-    sound.hit(Math.min(1, dealt / 15));
-  }
-
-  function healEnemy(amount) {
-    const actual = Math.min(amount, state.enemy.maxHp - state.enemy.hp);
-    state.enemy.hp += actual;
-    if (actual) floatText(`+${actual}`, SUITS.love.color);
-  }
-
-  function hurtPlayer(amount, direct = false) {
-    amount = Math.max(0, Math.round(amount));
-    if (!direct) {
-      const absorbed = Math.min(state.player.block, amount);
-      state.player.block -= absorbed;
-      amount -= absorbed;
-    }
-    if (amount > 0) {
-      state.player.hp = clamp(state.player.hp - amount, 0, state.player.maxHp);
-      state.lastHpLoss = amount;
-      screenFlash(SUITS.heart.color);
-      floatText(`SELF −${amount}`, SUITS.heart.color, 34);
-      sound.hurt();
-    }
-  }
-
-  function healPlayer(amount) {
-    const actual = Math.min(Math.round(amount), state.player.maxHp - state.player.hp);
-    state.player.hp += actual;
-    if (actual) floatText(`SELF +${actual}`, SUITS.love.color, 30);
-  }
-
-  function gainBlock(amount) {
-    state.player.block += Math.max(0, Math.round(amount));
-  }
-
-  function countFermented() {
-    return state.runDeck.filter((card) => card.rot >= 3).length;
-  }
-
-  function winEncounter() {
-    if (resolving && state.enemy.hp > 0) return;
-    resolving = true;
-    state.enemy.hp = 0;
-    render();
-    burstForSuit(state.encounterIndex === 2 ? 'heart' : 'love', 90);
-    sound.victory();
-    if (state.encounterIndex >= ENCOUNTERS.length - 1) {
-      ledger.victories += 1;
-      saveLedger();
-      setTimeout(showEnding, 900 / state.animationPace);
-    } else {
-      setTimeout(showRewards, 750 / state.animationPace);
-    }
-  }
-
-  function loseRun() {
-    resolving = true;
-    $('#endingScreen').classList.add('active');
-    $('#endingScreen .eyebrow').textContent = 'THE SELF WITHDRAWS';
-    $('#endingScreen h2').textContent = 'This world closes.';
-    $('#endingCopy').textContent = 'The Living Ledger keeps the laws you discovered. The next self does not begin from nothing.';
-    renderEndingStats();
-  }
-
-  function showEnding() {
-    $('#endingScreen').classList.add('active');
-    $('#endingScreen .eyebrow').textContent = 'THE CROWN REMAINS OPEN';
-    $('#endingScreen h2').textContent = 'You legislated outward.';
-    $('#endingCopy').textContent = 'The Star-Devourer was not slain. You wrote a world in which her hunger could no longer complete itself.';
-    renderEndingStats();
-  }
-
-  function renderEndingStats() {
-    $('#endingStats').innerHTML = `
-      <div><strong>${state.lawsWritten}</strong><span>LAWS WRITTEN</span></div>
-      <div><strong>${state.futuresDenied}</strong><span>FUTURES DENIED</span></div>
-      <div><strong>${countFermented()}</strong><span>GESTURES FERMENTED</span></div>`;
-  }
-
-  function showRewards() {
-    const options = shuffle(REWARD_POOL.filter((id) => !state.runDeck.some((c) => c.id === id))).slice(0, 3);
-    while (options.length < 3) options.push(...shuffle(REWARD_POOL).slice(0, 3 - options.length));
-    $('#rewardCards').innerHTML = options.map((id) => cardMarkup(makeCard(id), true)).join('');
-    $('#rewardCards').querySelectorAll('.card').forEach((el) => {
-      el.addEventListener('click', () => chooseReward(el.dataset.cardId));
-    });
-    $('#rewardScreen').classList.add('active');
-  }
-
-  function chooseReward(id) {
-    state.runDeck.push(makeCard(id));
-    $('#rewardScreen').classList.remove('active');
-    startEncounter(state.encounterIndex + 1);
-  }
-
-  function restResolve() {
-    if (resolving) return;
-    if (!state.clause.length) {
-      gainBlock(3);
-      showToast('Silence gathers 3 ward.');
-    }
-    resolveLaw();
-  }
-
-  function undo() {
-    if (!history.length || resolving) return;
-    restoreSnapshot(history.pop());
-    showToast('The last gesture returns to possibility.');
-  }
-
-  function render() {
-    if (!state) return;
-    renderStats();
-    renderEnemy();
-    renderSpectrum();
-    renderClause();
-    renderHand();
-    renderPrecedents();
-    renderCodex();
-  }
-
-  function renderStats() {
-    $('#playerHpText').textContent = `${state.player.hp} / ${state.player.maxHp}`;
-    $('#playerHpBar').style.width = `${state.player.hp / state.player.maxHp * 100}%`;
-    $('#blockText').textContent = state.player.block;
-    $('#energyText').textContent = state.player.energy;
-    $('#precedentText').textContent = Object.values(state.precedents).reduce((a, b) => a + b, 0);
-    $('#lawText').textContent = state.player.law;
-    $('#deckText').textContent = `DRAW ${state.drawPile.length} · DISCARD ${state.discard.length}`;
-    $('#paceText').textContent = `${state.animationPace}×`;
-  }
-
-  function renderEnemy() {
-    $('#enemyKind').textContent = state.enemy.kind;
-    $('#enemyName').textContent = state.enemy.name;
-    $('#enemyHpText').textContent = `${state.enemy.hp} / ${state.enemy.maxHp}`;
-    $('#enemyHpBar').style.width = `${state.enemy.hp / state.enemy.maxHp * 100}%`;
-    $('#enemySigil').className = `enemy-sigil ${state.enemy.className}`;
-    const statuses = [];
-    if (state.enemy.block) statuses.push(`<span class="status-chip" style="color:${SUITS.temple.color}">CROWN ${state.enemy.block}</span>`);
-    if (state.enemy.mark) statuses.push(`<span class="status-chip" style="color:${SUITS.love.color}">WITNESSED ${state.enemy.mark}</span>`);
-    if (state.enemy.softened) statuses.push(`<span class="status-chip" style="color:${SUITS.love.color}">MERCY −${state.enemy.softened}</span>`);
-    $('#enemyStatus').innerHTML = statuses.join('');
-  }
-
-  function renderSpectrum(chosenId = null) {
-    const coherentCount = state.futures.filter((future) => futureCoherent(future)).length;
-    $('#spectrumHint').textContent = coherentCount === 0
-      ? 'No future is permitted. A paradox is forming.'
-      : `${coherentCount} of ${state.futures.length} futures remain coherent.`;
-    $('#spectrum').innerHTML = state.futures.map((future) => {
-      const coherent = futureCoherent(future);
-      const force = Math.max(0, future.turnPower - state.enemy.softened);
-      return `<article class="future ${coherent ? '' : 'impossible'} ${chosenId === future.id ? 'chosen' : ''}">
-        <span class="future-power">${force}</span>
-        <h4>${future.name}</h4>
-        <p>${future.copy}</p>
-      </article>`;
-    }).join('');
-  }
-
-  function renderClause() {
-    const slots = $$('.clause-slot');
-    slots.forEach((slot, index) => {
-      const card = state.clause[index];
-      if (!card) {
-        slot.className = 'clause-slot';
-        slot.style.removeProperty('--suit');
-        slot.innerHTML = `<span>${['I', 'II', 'III', 'IV'][index]}</span>`;
-      } else {
-        const def = CARDS[card.id] || { name: 'Silence' };
-        slot.className = 'clause-slot filled';
-        slot.style.setProperty('--suit', SUITS[card.suit].color);
-        slot.innerHTML = `<span class="mini-glyph">${SUITS[card.suit].glyph}</span><span class="mini-name">${def.name}</span>`;
-      }
-    });
-    $('#lawName').textContent = state.clause.length ? generateLawName() : 'An unwritten law';
-    $('#undoButton').disabled = !history.length || resolving;
-    $('#restButton').disabled = resolving;
-    if (!state.clause.length) $('#pairMessage').textContent = 'Choose the first gesture.';
-  }
-
-  function renderHand() {
-    $('#hand').innerHTML = state.hand.map((card) => cardMarkup(card)).join('');
-    $('#hand').querySelectorAll('.card').forEach((el, index) => {
-      const card = state.hand.find((c) => c.uid === el.dataset.uid);
-      const canPlay = card && cardCanPlay(card);
-      el.disabled = !canPlay;
-      if (!canPlay && card && state.clause.length && state.clause.at(-1).suit === card.suit) el.classList.add('invalid');
-      el.style.animationDelay = `${index * 35}ms`;
-      el.addEventListener('click', () => playCard(el.dataset.uid));
-    });
-  }
-
-  function cardMarkup(card, reward = false) {
-    const def = CARDS[card.id] || {
-      name: 'Silence', suit: card.suit || 'temple', kind: 'ABSENCE',
-      copy: 'Costs one breath. Nothing answers.'
-    };
-    const suit = SUITS[def.suit];
-    const rotDots = [0, 1, 2].map((i) => `<i class="${card.rot > i ? 'full' : ''}"></i>`).join('');
-    return `<button class="card ${card.rot >= 3 ? 'fermented' : ''}" data-uid="${card.uid}" data-card-id="${card.id}" style="--suit:${suit.color}" ${reward ? '' : ''}>
-      <div class="card-top"><span class="card-glyph">${suit.glyph}</span><span class="card-cost">1</span></div>
-      <h4>${def.name}</h4>
-      <div class="card-kind">${suit.name} · ${def.kind}</div>
-      <p class="card-copy">${def.copy}</p>
-      <div class="card-footer"><span class="rot">${rotDots}</span><span class="ferment-label">${card.rot >= 3 ? 'TRANSFORMED' : `ROT ${card.rot}/3`}</span></div>
-    </button>`;
-  }
-
-  function renderPrecedents() {
-    const entries = Object.entries(state.precedents).sort((a, b) => b[1] - a[1]);
-    if (!entries.length) {
-      $('#precedentList').innerHTML = '<div class="empty-copy">Repeat a relation and the world will remember it.</div>';
-      return;
-    }
-    $('#precedentList').innerHTML = entries.map(([key, count]) => {
-      const [a, b] = key.split('>');
-      const pair = PAIRS[key];
-      return `<article class="precedent">
-        <span class="precedent-glyph" style="color:${SUITS[a].color};background:linear-gradient(135deg,${SUITS[a].color}22,${SUITS[b].color}22)">${SUITS[a].glyph}${SUITS[b].glyph}</span>
-        <div><h4>${pair.name}</h4><p>${pair.copy}</p></div><strong>×${count}</strong>
-      </article>`;
-    }).join('');
-  }
-
-  function renderCodex() {
-    if (!state) return;
-    const lawEntries = Object.entries(ledger.laws).sort((a, b) => b[1].count - a[1].count);
-    const suitEntries = Object.entries(SUITS).map(([key, suit]) => `
-      <article class="codex-entry"><h3 style="color:${suit.color}">${suit.glyph} ${suit.name}</h3><p>${suit.concept}. In a law, direction matters: ${suit.name} before another color is not the same relation as ${suit.name} after it.</p></article>`).join('');
-    const laws = lawEntries.length ? lawEntries.slice(0, 8).map(([pattern, law]) => `
-      <article class="codex-entry"><h3>${law.name} ×${law.count}</h3><p>${pattern.split('>').map((s) => SUITS[s]?.name || s).join(' → ')}</p></article>`).join('') : '<article class="codex-entry"><h3>No laws recorded</h3><p>The ledger is patient.</p></article>';
-    $('#codexBody').innerHTML = suitEntries + laws;
-  }
-
-  function updateRunline() {
-    $$('.run-node').forEach((node, index) => {
-      node.classList.toggle('active', index === state.encounterIndex);
-      node.classList.toggle('done', index < state.encounterIndex);
-    });
-  }
-
-  function showToast(message) {
-    const toast = $('#toast');
-    toast.textContent = message;
-    toast.classList.add('show');
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => toast.classList.remove('show'), 1800 / (state?.animationPace || 1));
-  }
-
-  function floatText(text, color, top = 46) {
-    const el = document.createElement('span');
-    el.className = 'float-text';
-    el.style.color = color;
-    el.style.top = `${top}%`;
-    el.textContent = text;
-    $('#floatingLayer').appendChild(el);
-    setTimeout(() => el.remove(), 1000);
-  }
-
-  function hurtEnemyVisual() {
-    const sigil = $('#enemySigil');
-    sigil.classList.add('hurt');
-    setTimeout(() => sigil.classList.remove('hurt'), 160);
-  }
-
-  function screenFlash(color) {
-    document.body.animate([
-      { boxShadow: `inset 0 0 0 0 ${color}00` },
-      { boxShadow: `inset 0 0 120px 15px ${color}55` },
-      { boxShadow: `inset 0 0 0 0 ${color}00` }
-    ], { duration: 340, easing: 'ease-out' });
-  }
-
-  function pulseInvalid(suit) {
-    document.documentElement.animate([
-      { filter: 'none' },
-      { filter: `drop-shadow(0 0 5px ${SUITS[suit].color})` },
-      { filter: 'none' }
-    ], { duration: 260 });
-  }
-
-  // -------------------------------------------------------------------------
-  // Generative world renderer. No image assets: every frame is born from law.
-  // -------------------------------------------------------------------------
-  const canvas = $('#world');
-  const ctx = canvas.getContext('2d', { alpha: false });
-  let W = 0, H = 0, DPR = 1, t = 0;
-  let pointer = { x: 0, y: 0 };
-  let stars = [];
-  let particles = [];
-  let latticeSeed = [];
-
-  function resizeCanvas() {
-    DPR = Math.min(2, window.devicePixelRatio || 1);
-    W = window.innerWidth;
-    H = window.innerHeight;
-    canvas.width = Math.round(W * DPR);
-    canvas.height = Math.round(H * DPR);
-    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-    stars = Array.from({ length: Math.round(W * H / 8000) }, () => ({
-      x: Math.random() * W, y: Math.random() * H,
-      r: Math.random() * 1.3 + .2, phase: Math.random() * Math.PI * 2,
-      c: pick(Object.values(SUITS)).color
-    }));
-    latticeSeed = Array.from({ length: 46 }, (_, i) => ({
-      a: Math.random() * Math.PI * 2,
-      r: 80 + Math.random() * Math.min(W, H) * .34,
-      q: i % 4
-    }));
-  }
-
-  function burstForSuit(suit, count = 20) {
-    const color = SUITS[suit].color;
-    for (let i = 0; i < count; i++) {
-      const a = Math.random() * Math.PI * 2;
-      const speed = 1 + Math.random() * 4;
-      particles.push({
-        x: W * .5 + (Math.random() - .5) * 120,
-        y: H * .42 + (Math.random() - .5) * 90,
-        vx: Math.cos(a) * speed,
-        vy: Math.sin(a) * speed,
-        life: 1,
-        decay: .012 + Math.random() * .025,
-        size: 1 + Math.random() * 3,
-        color
-      });
-    }
-    if (particles.length > 450) particles.splice(0, particles.length - 450);
-  }
-
-  function drawWorld(now) {
-    const pace = state?.animationPace || 1;
-    t += .008 * pace;
-    const cx = W * .5 + pointer.x * 9;
-    const cy = H * .42 + pointer.y * 7;
-
-    const bg = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.max(W, H) * .78);
-    bg.addColorStop(0, '#071018');
-    bg.addColorStop(.33, '#02070b');
-    bg.addColorStop(1, '#000000');
-    ctx.fillStyle = bg;
-    ctx.fillRect(0, 0, W, H);
-
-    ctx.globalCompositeOperation = 'screen';
-    for (const star of stars) {
-      const flicker = .18 + .45 * (Math.sin(t * 2 + star.phase) * .5 + .5);
-      ctx.globalAlpha = flicker;
-      ctx.fillStyle = star.c;
-      ctx.beginPath();
-      ctx.arc(star.x + pointer.x * star.r * 2, star.y + pointer.y * star.r * 2, star.r, 0, Math.PI * 2);
-      ctx.fill();
-    }
-
-    ctx.save();
-    ctx.translate(cx, cy);
-    ctx.rotate(t * .035);
-    ctx.lineWidth = .55;
-    for (let i = 0; i < latticeSeed.length; i++) {
-      const p = latticeSeed[i];
-      const next = latticeSeed[(i * 7 + 9) % latticeSeed.length];
-      const x1 = Math.cos(p.a + Math.sin(t + i) * .04) * p.r;
-      const y1 = Math.sin(p.a + Math.cos(t * .7 + i) * .04) * p.r * .72;
-      const x2 = Math.cos(next.a) * next.r;
-      const y2 = Math.sin(next.a) * next.r * .72;
-      const suit = Object.values(SUITS)[p.q];
-      ctx.strokeStyle = suit.color;
-      ctx.globalAlpha = .035 + (state?.player.law || 0) * .003;
-      ctx.beginPath();
-      ctx.moveTo(x1, y1);
-      ctx.quadraticCurveTo(0, 0, x2, y2);
-      ctx.stroke();
-    }
-    ctx.restore();
-
-    const orbit = Math.min(W, H) * .19;
-    Object.entries(SUITS).forEach(([key, suit], i) => {
-      const a = t * (.32 + i * .035) + i * Math.PI / 2;
-      const x = cx + Math.cos(a) * orbit * (1 + i * .08);
-      const y = cy + Math.sin(a * 1.14) * orbit * .55;
-      const g = ctx.createRadialGradient(x, y, 0, x, y, 46);
-      g.addColorStop(0, suit.color + 'd0');
-      g.addColorStop(.08, suit.color + '88');
-      g.addColorStop(1, suit.color + '00');
-      ctx.globalAlpha = .55;
-      ctx.fillStyle = g;
-      ctx.beginPath();
-      ctx.arc(x, y, 46, 0, Math.PI * 2);
-      ctx.fill();
-    });
-
-    particles.forEach((p) => {
-      p.x += p.vx * pace;
-      p.y += p.vy * pace;
-      p.vx *= .985;
-      p.vy *= .985;
-      p.life -= p.decay * pace;
-      ctx.globalAlpha = Math.max(0, p.life);
-      ctx.fillStyle = p.color;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, Math.max(0.01, p.size * p.life), 0, Math.PI * 2);
-      ctx.fill();
-    });
-    particles = particles.filter((p) => p.life > 0);
-
-    if (state?.enemy) {
-      const hpRatio = state.enemy.hp / state.enemy.maxHp;
-      ctx.save();
-      ctx.translate(cx, cy);
-      ctx.rotate(-t * .08);
-      ctx.strokeStyle = state.enemy.className === 'bride' ? SUITS.love.color : state.enemy.className === 'devourer' ? SUITS.heart.color : SUITS.power.color;
-      ctx.globalAlpha = .06 + (1 - hpRatio) * .08;
-      for (let i = 0; i < 7; i++) {
-        ctx.beginPath();
-        const r = 105 + i * 18 + Math.sin(t * 2 + i) * 7;
-        ctx.arc(0, 0, r, i * .4, i * .4 + Math.PI * (1.1 + hpRatio * .5));
-        ctx.stroke();
-      }
-      ctx.restore();
-    }
-
-    ctx.globalAlpha = 1;
-    ctx.globalCompositeOperation = 'source-over';
-    requestAnimationFrame(drawWorld);
-  }
-
-  window.addEventListener('pointermove', (event) => {
-    pointer.x = (event.clientX / Math.max(1, W) - .5) * 2;
-    pointer.y = (event.clientY / Math.max(1, H) - .5) * 2;
-  });
-  window.addEventListener('resize', resizeCanvas);
-  resizeCanvas();
-  requestAnimationFrame(drawWorld);
-
-  // -------------------------------------------------------------------------
-  // Generative audio: restrained tones mapped to the four semantic colors.
-  // -------------------------------------------------------------------------
-  const sound = {
-    ctx: null,
-    master: null,
-    enabled: false,
-    drone: null,
-    ensure() {
-      if (this.ctx) return;
-      this.ctx = new (window.AudioContext || window.webkitAudioContext)();
-      this.master = this.ctx.createGain();
-      this.master.gain.value = .085;
-      this.master.connect(this.ctx.destination);
-    },
-    toggle() {
-      this.ensure();
-      this.enabled = !this.enabled;
-      if (this.enabled) {
-        this.ctx.resume();
-        this.startDrone();
-      } else this.stopDrone();
-      $('#audioButton').textContent = this.enabled ? '◉' : '◌';
-      showToast(this.enabled ? 'The world is audible.' : 'The world is silent.');
-    },
-    tone(freq, duration = .24, type = 'sine', gain = .15, delay = 0) {
-      if (!this.enabled) return;
-      this.ensure();
-      const at = this.ctx.currentTime + delay;
-      const osc = this.ctx.createOscillator();
-      const amp = this.ctx.createGain();
-      osc.type = type;
-      osc.frequency.setValueAtTime(freq, at);
-      amp.gain.setValueAtTime(0, at);
-      amp.gain.linearRampToValueAtTime(gain, at + .018);
-      amp.gain.exponentialRampToValueAtTime(.0001, at + duration);
-      osc.connect(amp); amp.connect(this.master);
-      osc.start(at); osc.stop(at + duration + .03);
-    },
-    playSuit(suit) {
-      const f = { heart: 110, love: 220, power: 164.81, temple: 293.66 }[suit];
-      this.tone(f, .28, suit === 'power' ? 'triangle' : 'sine', .14);
-      this.tone(f * 2, .19, 'sine', .06, .04);
-    },
-    hit(force) { this.tone(70 + force * 45, .16, 'sawtooth', .08); },
-    hurt() { this.tone(82.41, .35, 'sawtooth', .1); },
-    chorus() { [220, 277.18, 329.63, 440].forEach((f, i) => this.tone(f, .65, 'sine', .055, i * .045)); },
-    paradox() { [293.66, 220, 164.81, 110].forEach((f, i) => this.tone(f, .8, 'triangle', .09, i * .07)); },
-    victory() { [110, 164.81, 220, 293.66, 440].forEach((f, i) => this.tone(f, 1.1, 'sine', .07, i * .08)); },
-    startDrone() {
-      if (this.drone || !this.enabled) return;
-      const osc = this.ctx.createOscillator();
-      const amp = this.ctx.createGain();
-      const filter = this.ctx.createBiquadFilter();
-      osc.type = 'sine'; osc.frequency.value = 55;
-      filter.type = 'lowpass'; filter.frequency.value = 240;
-      amp.gain.value = .035;
-      osc.connect(filter); filter.connect(amp); amp.connect(this.master);
-      osc.start();
-      this.drone = { osc, amp };
-    },
-    stopDrone() {
-      if (!this.drone) return;
-      try { this.drone.osc.stop(); } catch (_) {}
-      this.drone = null;
-    }
+  const ledger = loadLedger();
+  const state = {
+    screen:'title', encounter:0, turn:1, current:null, target:null, omens:[], activeOmen:0,
+    deck:[], draw:[], discard:[], hand:[], selected:[], pocket:[], stable:0, pairHistory:{},
+    resolved:0, sound:false, gloss:false, animating:false, runKarma:0, lastRite:null, freezeNext:false,
+    delayed:[], discoveries:new Set(ledger.discoveries || [])
   };
 
-  // -------------------------------------------------------------------------
-  // Controls.
-  // -------------------------------------------------------------------------
-  $('#beginButton').addEventListener('click', () => {
-    $('#titleScreen').classList.remove('active');
-    createRun();
-    sound.ensure();
-  });
-  $('#newRunButton').addEventListener('click', () => {
-    $('#endingScreen').classList.remove('active');
-    $('#rewardScreen').classList.remove('active');
-    createRun();
-  });
-  $('#againButton').addEventListener('click', () => {
-    $('#endingScreen').classList.remove('active');
-    createRun();
-  });
-  $('#restButton').addEventListener('click', restResolve);
-  $('#undoButton').addEventListener('click', undo);
-  $('#audioButton').addEventListener('click', () => sound.toggle());
-  $('#codexButton').addEventListener('click', () => { renderCodex(); $('#codexDialog').showModal(); });
-  $('#closeCodex').addEventListener('click', () => $('#codexDialog').close());
-  $('#paceInput').addEventListener('input', (event) => {
-    if (!state) return;
-    state.animationPace = Number(event.target.value);
-    document.documentElement.style.setProperty('--pace', state.animationPace);
-    $('#paceText').textContent = `${state.animationPace}×`;
-  });
-  window.addEventListener('keydown', (event) => {
-    if (!state || $('#titleScreen').classList.contains('active')) return;
-    if (event.key >= '1' && event.key <= '9') {
-      const card = state.hand[Number(event.key) - 1];
-      if (card) playCard(card.uid);
-    }
-    if (event.key.toLowerCase() === 'r') restResolve();
-    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'z') {
-      event.preventDefault(); undo();
-    }
-  });
+  function loadLedger(){
+    try { return JSON.parse(localStorage.getItem('leafbound-ledger-v2') || '{}'); } catch { return {}; }
+  }
+  function saveLedger(){
+    const next={runs:(ledger.runs||0),victories:(ledger.victories||0),discoveries:[...state.discoveries]};
+    try { localStorage.setItem('leafbound-ledger-v2',JSON.stringify(next)); } catch {}
+    Object.assign(ledger,next);
+  }
+  function makeCard(id){ return { uid:cryptoRandom(), id, karma:0 }; }
+  function cryptoRandom(){ return Math.random().toString(36).slice(2,9); }
+  function spec(card){ return CARD_LIBRARY[card.id]; }
+  function dominant(v){ return Object.keys(v).sort((a,b)=>v[b]-v[a])[0]; }
+  function normalize(v){
+    const t=Math.max(.001,sum(v)); const out={};
+    for(const k of 'rgpb') out[k]=clamp(v[k]*100/t,0,100);
+    return out;
+  }
+  function cloneVec(v){ return {r:v.r,g:v.g,p:v.p,b:v.b}; }
+  function errors(){ const e={}; for(const k of 'rgpb') e[k]=state.target[k]-state.current[k]; return e; }
+  function harmony(){
+    let distance=0; for(const k of 'rgpb') distance+=Math.abs(state.current[k]-state.target[k]);
+    return clamp(1-distance/150,0,1);
+  }
+  function nudge(k, delta){ state.current[k]=Math.max(0,state.current[k]+delta); state.current=normalize(state.current); }
+  function transfer(from,to,amount){
+    const a=Math.min(amount,Math.max(0,state.current[from]-1));
+    state.current[from]-=a; state.current[to]+=a; state.current=normalize(state.current);
+  }
+  function mostDeficit(except=[]){ const e=errors(); return Object.keys(e).filter(k=>!except.includes(k)).sort((a,b)=>e[b]-e[a])[0]; }
+  function mostSurplus(except=[]){ const e=errors(); return Object.keys(e).filter(k=>!except.includes(k)).sort((a,b)=>e[a]-e[b])[0]; }
+  function moveToward(k,amount){ const d=state.target[k]-state.current[k]; nudge(k, Math.sign(d)*Math.min(Math.abs(d),amount)); }
+  function moveAllToward(amount){
+    for(const k of 'rgpb') state.current[k]+=clamp(state.target[k]-state.current[k],-amount,amount);
+    state.current=normalize(state.current);
+  }
+  function nudgeLowestDeficit(amount){ const k=mostDeficit(); if(errors()[k]>0) moveToward(k,amount); }
 
+  function pairOperation(ctx){
+    const {key,mag}=ctx;
+    const e=errors();
+    switch(key){
+      case 'rr': moveToward('r',mag*1.25); moveToward(mostSurplus(['r']),mag*.45); break;
+      case 'rg': moveToward('r',mag*.65); moveToward('g',mag); transfer(mostSurplus(['r','g']),'g',mag*.35); break;
+      case 'rp': {
+        const needR=e.r>e.p?'r':'p', other=needR==='r'?'p':'r';
+        transfer(other,needR,mag*.75); moveToward(needR,mag*.45); ctx.residue.p+=1.5; break;
+      }
+      case 'rb': moveToward('r',mag*.8); moveToward('b',mag*.8); ctx.freeze=true; break;
+      case 'gr': moveToward('g',mag*.85); moveToward('r',mag*.85); balancePair('g','r',mag*.35); break;
+      case 'gg': moveToward(mostDeficit(),mag*1.05); moveToward(mostDeficit(),mag*.55); break;
+      case 'gp': swapIfBetter('g','p',mag); moveToward('g',mag*.45); moveToward('p',mag*.45); break;
+      case 'gb': moveAllToward(mag*.48); moveToward('g',mag*.35); moveToward('b',mag*.35); break;
+      case 'pr': transfer(mostSurplus(['r']),'r',mag*.8); moveToward('r',mag*.7); ctx.residue.r+=1; break;
+      case 'pg': {
+        const payload={r:0,g:mag*.75,p:-mag*.25,b:0,label:'chrysalis'};
+        state.delayed.push(payload); moveToward('p',mag*.45); ctx.result='A chrysalis will open after the next rite.'; break;
+      }
+      case 'pp': invertLargestError(mag); invertLargestError(mag*.6); break;
+      case 'pb': {
+        const from=mostSurplus(); const to=mostDeficit(); const kept=Math.min(mag*.7,Math.max(0,state.current[from]-state.target[from]));
+        if(kept>0){ state.current[from]-=kept; state.pocket.push({from,to,amount:kept,label:'sealed wing'}); state.current=normalize(state.current); ctx.result='A surplus has been folded into the pocket.'; }
+        else moveToward('p',mag);
+        break;
+      }
+      case 'br': transfer('b',mostDeficit(['b']),mag*.75); moveToward('r',mag*.5); break;
+      case 'bg': moveAllToward(mag*.62); smoothExtremes(mag*.3); break;
+      case 'bp': moveToward(mostSurplus(),mag*1.15); moveToward('p',mag*.35); break;
+      case 'bb': moveAllToward(mag*.38); moveToward('b',mag*.65); ctx.freeze=true; break;
+    }
+    for(const k of 'rgpb') if(ctx.residue[k]) state.current[k]+=ctx.residue[k];
+    state.current=normalize(state.current);
+  }
+  function balancePair(a,b,amount){
+    const desiredDiff=state.target[a]-state.target[b], currentDiff=state.current[a]-state.current[b];
+    const delta=clamp((desiredDiff-currentDiff)/2,-amount,amount);
+    state.current[a]+=delta; state.current[b]-=delta; state.current=normalize(state.current);
+  }
+  function swapIfBetter(a,b,amount){
+    const before=Math.abs(state.target[a]-state.current[a])+Math.abs(state.target[b]-state.current[b]);
+    const take=Math.min(amount,Math.abs(state.current[a]-state.current[b])*.35);
+    const trial=cloneVec(state.current); const dir=state.current[a]>state.current[b]?1:-1;
+    trial[a]-=dir*take; trial[b]+=dir*take;
+    const after=Math.abs(state.target[a]-trial[a])+Math.abs(state.target[b]-trial[b]);
+    if(after<before) state.current=normalize(trial); else { moveToward(a,amount*.5); moveToward(b,amount*.5); }
+  }
+  function invertLargestError(amount){
+    const from=mostSurplus(), to=mostDeficit();
+    if(errors()[from]<0 && errors()[to]>0) transfer(from,to,amount*.75); else moveToward(to,amount*.6);
+  }
+  function smoothExtremes(amount){
+    const hi=Object.keys(state.current).sort((a,b)=>state.current[b]-state.current[a])[0];
+    const lo=Object.keys(state.current).sort((a,b)=>state.current[a]-state.current[b])[0];
+    transfer(hi,lo,amount);
+  }
+
+  function startRun(){
+    state.encounter=0; state.turn=1; state.resolved=0; state.runKarma=0; state.pairHistory={}; state.pocket=[]; state.delayed=[]; state.selected=[];
+    state.deck=STARTER.map(makeCard); state.draw=[]; state.discard=[]; state.hand=[];
+    showScreen('game'); startEncounter();
+  }
+  function startEncounter(){
+    const encounter=ENCOUNTERS[state.encounter];
+    state.turn=1; state.stable=0; state.current=cloneVec(encounter.current); state.target=cloneVec(encounter.target); state.activeOmen=0;
+    state.omens=sample(OMENS,3); state.selected=[]; state.pocket=[]; state.delayed=[]; state.freezeNext=false;
+    state.draw=weightedShuffle([...state.deck]); state.discard=[]; state.hand=[]; drawTo(5);
+    renderAll();
+  }
+  function drawTo(n){ while(state.hand.length<n){ const c=drawOne(); if(!c) break; state.hand.push(c); } }
+  function drawOne(){
+    if(!state.draw.length){ if(!state.discard.length) return null; state.draw=weightedShuffle(state.discard.splice(0)); }
+    return state.draw.shift();
+  }
+  function weightedShuffle(cards){
+    const pool=[...cards], out=[];
+    while(pool.length){
+      const total=pool.reduce((t,c)=>t+1+c.karma*.35,0); let roll=Math.random()*total; let idx=0;
+      for(;idx<pool.length;idx++){ roll-=1+pool[idx].karma*.35; if(roll<=0) break; }
+      out.push(pool.splice(Math.min(idx,pool.length-1),1)[0]);
+    }
+    return out;
+  }
+  function sample(arr,n){ return [...arr].sort(()=>Math.random()-.5).slice(0,n); }
+
+  function selectCard(uid){
+    if(state.animating) return;
+    const index=state.selected.indexOf(uid);
+    if(index>=0) state.selected.splice(index,1);
+    else if(state.selected.length<2) state.selected.push(uid);
+    else { state.selected.shift(); state.selected.push(uid); }
+    renderHand(); renderSyntax();
+  }
+  function undo(){ state.selected=[]; renderHand(); renderSyntax(); }
+  async function invoke(){
+    if(state.selected.length!==2 || state.animating) return;
+    state.animating=true;
+    const first=state.hand.find(c=>c.uid===state.selected[0]);
+    const second=state.hand.find(c=>c.uid===state.selected[1]);
+    const a=dominant(spec(first).vector), b=dominant(spec(second).vector), key=a+b;
+    const pair=PAIRS[key];
+    const omen=state.omens[state.activeOmen];
+    const ctx={ first,second,a,b,key,mag:3+spec(first).pips+spec(second).pips+(first.karma>=3?1.5:0)+(second.karma>=3?1.5:0),residue:{r:0,g:0,p:0,b:0},freeze:false,pocketMultiplier:1,result:'' };
+    omen.apply?.(ctx);
+    if(spec(first).zone===spec(second).zone) ctx.mag+=1;
+    if(spec(first).zone==='eyes') ctx.mag+=.4;
+    if(spec(first).zone==='lips') ctx.mag+=(state.pairHistory[key]||0)*.35;
+    pairOperation(ctx);
+    releasePocket(ctx);
+    state.pairHistory[key]=(state.pairHistory[key]||0)+1;
+    state.discoveries.add(key); saveLedger();
+    first.karma++; second.karma++; state.runKarma+=2;
+    state.lastRite={key,first,second,pair};
+    playRiteSound(a,b); animateRite(first,second,pair,ctx);
+    renderAuras(); renderRoster(); updateHeader();
+    await wait(850);
+    const score=harmony();
+    if(score>=ENCOUNTERS[state.encounter].threshold) state.stable++; else state.stable=0;
+    renderProgress();
+    if(state.stable>=ENCOUNTERS[state.encounter].stable){
+      await wait(500); state.animating=false; resolveEncounter(); return;
+    }
+    const used=state.hand.filter(c=>state.selected.includes(c.uid));
+    state.hand=state.hand.filter(c=>!state.selected.includes(c.uid));
+    for(const c of used){
+      if(c.karma>=5 && Math.random()<.45) state.draw.unshift(c); else state.discard.push(c);
+    }
+    state.selected=[];
+    applyDelayed();
+    if(!(ctx.freeze||state.freezeNext)) applyDrift(); else state.freezeNext=false;
+    omen.after?.();
+    state.turn++;
+    state.activeOmen=(state.activeOmen+1)%state.omens.length;
+    if(state.turn>ENCOUNTERS[state.encounter].turns){ state.animating=false; endRun(false); return; }
+    drawTo(5); renderAll(); state.animating=false;
+  }
+  function releasePocket(ctx){
+    if(!state.pocket.length) return;
+    const item=state.pocket.shift(); const amount=item.amount*(ctx.pocketMultiplier||1);
+    const need=state.target[item.to]-state.current[item.to];
+    if(need>0) state.current[item.to]+=Math.min(need,amount); else state.current[item.from]+=amount*.35;
+    state.current=normalize(state.current);
+    ctx.result = ctx.result || `The pocket released ${item.label}.`;
+  }
+  function applyDelayed(){
+    if(!state.delayed.length) return;
+    const due=state.delayed.shift();
+    for(const k of 'rgpb') state.current[k]+=due[k]||0;
+    state.current=normalize(state.current); toast('The chrysalis opened.');
+  }
+  function applyDrift(){
+    const encounter=ENCOUNTERS[state.encounter];
+    for(const k of 'rgpb') state.current[k]+=encounter.drift[k]+(Math.random()-.5)*1.8;
+    state.current=normalize(state.current);
+  }
+  function resolveEncounter(){
+    state.resolved++; updateHeader();
+    if(state.encounter>=ENCOUNTERS.length-1){ endRun(true); return; }
+    openRewards();
+  }
+  function openRewards(){
+    const owned=new Set(state.deck.map(c=>c.id));
+    let pool=REWARDS.filter(id=>!owned.has(id)); if(pool.length<3) pool=REWARDS;
+    const choices=sample(pool,3);
+    $('#rewardChoices').innerHTML=choices.map(id=>cardHTML(makeCard(id),true)).join('');
+    $$('#rewardChoices .tarot-card').forEach((el,i)=>el.addEventListener('click',()=>chooseReward(choices[i])));
+    $('#rewardModal').classList.add('open');
+  }
+  function chooseReward(id){
+    state.deck.push(makeCard(id));
+    $('#rewardModal').classList.remove('open');
+    state.encounter++; startEncounter();
+  }
+  function endRun(victory){
+    ledger.runs=(ledger.runs||0)+1; if(victory) ledger.victories=(ledger.victories||0)+1; saveLedger();
+    const profile=victory?{...GODDESSES.p,hair:'#ff579b',hair2:'#4d0b58',style:'crown'}:GODDESSES.b;
+    $('#endPortrait').innerHTML=portraitSVG(profile,{full:true,halo:victory});
+    $('#endKicker').textContent=victory?'THE READING COMPLETES':'THE RITE CLOSES';
+    $('#endTitle').textContent=victory?'All four colors remain possible.':'The condition remains unresolved.';
+    $('#endCopy').textContent=victory?'No one was defeated. The goddesses learned a new way for the world to continue.':'Nothing died. The field merely hardened before the symbols could discover the right relation.';
+    $('#endStats').innerHTML=`<span><b>${state.resolved}</b><small>CONDITIONS</small></span><span><b>${state.runKarma}</b><small>KARMIC WEIGHT</small></span><span><b>${state.discoveries.size}</b><small>MANIFESTATIONS</small></span>`;
+    $('#endModal').classList.add('open');
+  }
+
+  function renderAll(){
+    const e=ENCOUNTERS[state.encounter];
+    $('#encounterIndex').textContent=roman(state.encounter+1); $('#conditionName').textContent=e.name; $('#conditionEpithet').textContent=e.epithet;
+    $('#conditionPortrait').innerHTML=portraitSVG({...e,accent:e.palette[0]},{full:true,halo:true});
+    renderAuras(); renderProgress(); renderOmens(); renderHand(); renderSyntax(); renderRoster(); renderPocket(); updateHeader();
+    $('#deckCount').textContent=state.draw.length; $('#discardCount').textContent=state.discard.length;
+  }
+  function renderAuras(){
+    setAura($('#currentAura'),state.current); setAura($('#targetAura'),state.target);
+  }
+  function setAura(el,v){
+    el.style.background=`conic-gradient(${COLORS.r} 0 ${v.r}%,${COLORS.g} ${v.r}% ${v.r+v.g}%,${COLORS.p} ${v.r+v.g}% ${v.r+v.g+v.p}%,${COLORS.b} ${v.r+v.g+v.p}% 100%)`;
+  }
+  function renderProgress(){
+    const e=ENCOUNTERS[state.encounter], h=harmony();
+    $('#harmonyText').textContent=`${Math.round(h*100)}%`; $('#harmonyFill').style.width=`${h*100}%`; $('#harmonyThreshold').style.left=`${e.threshold*100}%`;
+    $('#stabilityPips').innerHTML=Array.from({length:e.stable},(_,i)=>`<i class="${i<state.stable?'filled':''}"></i>`).join('');
+    $('#turnText').textContent=`${state.turn} / ${e.turns}`; $('#turnPips').innerHTML=Array.from({length:e.turns},(_,i)=>`<i class="${i<state.turn?'used':''}"></i>`).join('');
+  }
+  function renderOmens(){
+    $('#omenRow').innerHTML=state.omens.map((o,i)=>`<div class="omen ${i===state.activeOmen?'active':''}"><div class="omen-glyph">${o.glyph}</div><div><b>${o.name}</b><small>${o.copy}</small></div></div>`).join('');
+  }
+  function renderHand(){
+    $('#hand').innerHTML=state.hand.map(c=>cardHTML(c,false,state.selected.includes(c.uid))).join('');
+    $$('#hand .tarot-card').forEach(el=>el.addEventListener('click',()=>selectCard(el.dataset.uid)));
+    $('#undoButton').disabled=!state.selected.length; $('#invokeButton').disabled=state.selected.length!==2;
+  }
+  function cardHTML(card,reward=false,selected=false){
+    const c=spec(card), split=c.split?`<div class="card-split" style="--split-color:${COLORS[c.split]}"></div>`:'';
+    return `<button class="tarot-card ${selected?'selected':''} ${card.karma>=3?'awakened':''}" style="--card-color:${COLORS[c.color]}" data-uid="${card.uid}" title="${c.name}: ${c.copy}">
+      ${split}<div class="card-inner"><div class="card-pips">${'<i></i>'.repeat(c.pips)}</div><div class="card-glyph">${c.glyph}</div><div class="card-gloss">${c.name}</div><div class="card-zone">${ZONES[c.zone].glyph}</div><div class="card-karma">${card.karma?`⌁${card.karma}`:''}</div></div></button>`;
+  }
+  function renderSyntax(){
+    const cards=state.selected.map(uid=>state.hand.find(c=>c.uid===uid));
+    fillSlot($('#actorSlot'),cards[0]); fillSlot($('#mediumSlot'),cards[1]);
+    if(!cards.length){ $('#riteName').textContent='CHOOSE THE ACTING SYMBOL'; $('#riteResult').textContent=''; $('#manifestPortrait').innerHTML=''; $('#manifestPortrait').classList.remove('active'); }
+    else if(cards.length===1){ const g=GODDESSES[dominant(spec(cards[0]).vector)]; $('#riteName').textContent=`${g.name.toUpperCase()} WILL ACT`; $('#riteResult').textContent='Choose what she acts on, with, or through.'; $('#manifestPortrait').innerHTML=portraitSVG(g,{full:true}); $('#manifestPortrait').classList.add('active'); }
+    else { const a=dominant(spec(cards[0]).vector),b=dominant(spec(cards[1]).vector),pair=PAIRS[a+b]; $('#riteName').textContent=pair.name; $('#riteResult').textContent=pair.copy; $('#manifestPortrait').innerHTML=manifestSVG(a,b); $('#manifestPortrait').classList.add('active'); }
+    $('#undoButton').disabled=!cards.length; $('#invokeButton').disabled=cards.length!==2;
+  }
+  function fillSlot(el,card){
+    if(!card){ el.className='syntax-slot'; el.innerHTML=`<span>${el.id==='actorSlot'?'Ⅰ':'Ⅱ'}</span>`; return; }
+    const c=spec(card); el.className='syntax-slot filled'; el.style.setProperty('--slot-color',COLORS[c.color]); el.innerHTML=`<span class="mini-symbol">${c.glyph}</span>`;
+  }
+  function renderRoster(){
+    const active=state.selected.length?dominant(spec(state.hand.find(c=>c.uid===state.selected[0])).vector):null;
+    $('#goddessRoster').innerHTML=Object.entries(GODDESSES).map(([k,g])=>`<div class="goddess-chip ${active===k?'active':''}" style="--goddess-color:${g.accent}">${portraitSVG(g,{bust:true})}<div><b>${g.name}</b><small>${g.title}</small></div></div>`).join('');
+  }
+  function renderPocket(){
+    $('#pocketTray').innerHTML=`<div class="panel-kicker">POCKETS</div>`+(state.pocket.length?state.pocket.map(p=>`<div class="pocket-token"><b>▱</b><span>${p.label}<small> ${p.amount.toFixed(1)} weight</small></span></div>`).join(''):'<p>Nothing is being kept.</p>');
+  }
+  function updateHeader(){ $('#resolvedCount').textContent=state.resolved; $('#karmaCount').textContent=state.runKarma; $('#discoveryCount').textContent=state.discoveries.size; }
+  function animateRite(first,second,pair,ctx){
+    $('#riteName').textContent=pair.name; $('#riteResult').textContent=ctx.result||pair.copy; $('#manifestPortrait').innerHTML=manifestSVG(dominant(spec(first).vector),dominant(spec(second).vector)); $('#manifestPortrait').classList.add('active');
+    const wake=$('#colorWake'); wake.innerHTML=''; const colors=[COLORS[spec(first).color],COLORS[spec(second).color]];
+    for(let i=0;i<28;i++){ const p=document.createElement('i'); p.className='wake-particle'; p.style.background=colors[i%2]; p.style.left=`${48+Math.random()*4}%`; p.style.top=`${48+Math.random()*4}%`; p.style.setProperty('--x',`${(Math.random()-.5)*520}px`); p.style.setProperty('--y',`${(Math.random()-.5)*310}px`); p.style.animationDelay=`${Math.random()*.18}s`; wake.appendChild(p); }
+  }
+
+  function portraitSVG(profile,opt={}){
+    const accent=profile.accent||profile.palette?.[0]||'#fff', hair=profile.hair||accent, hair2=profile.hair2||'#222', eye=profile.eye||'#222', style=profile.style||'flare';
+    const backHair = style==='braid'
+      ? `<path d="M73 78 Q45 105 55 222 Q69 246 88 225 L91 105Z" fill="${hair2}"/><path d="M187 78 Q215 105 205 222 Q191 246 172 225 L169 105Z" fill="${hair2}"/><path d="M62 139 Q25 172 51 240" fill="none" stroke="${hair}" stroke-width="18" stroke-linecap="round" stroke-dasharray="13 5"/>`
+      : style==='wing'
+      ? `<path d="M83 70 Q27 87 30 186 Q47 159 73 155 Q42 205 70 246 Q99 199 103 102Z" fill="${hair2}"/><path d="M177 70 Q233 87 230 186 Q213 159 187 155 Q218 205 190 246 Q161 199 157 102Z" fill="${hair2}"/>`
+      : style==='veil'
+      ? `<path d="M64 66 Q28 113 47 248 L92 211 L91 92Z" fill="${hair2}"/><path d="M196 66 Q232 113 213 248 L168 211 L169 92Z" fill="${hair2}"/><path d="M49 100 Q130 30 211 100" fill="none" stroke="${hair}" stroke-width="26" stroke-linecap="round"/>`
+      : style==='crown'
+      ? `<path d="M55 92 L78 35 L105 72 L130 25 L155 72 L183 35 L206 92 Q224 160 192 240 L68 240 Q36 160 55 92Z" fill="${hair2}"/>`
+      : `<path d="M58 95 Q42 42 105 37 Q130 11 158 40 Q218 46 202 108 L185 235 L72 235Z" fill="${hair2}"/>`;
+    const fringe = style==='veil'
+      ? `<path d="M77 91 Q105 52 131 69 Q153 49 184 92 L164 119 Q139 102 130 79 Q114 108 89 123Z" fill="${hair}"/>`
+      : style==='wing'
+      ? `<path d="M72 91 Q91 47 130 67 Q173 44 190 95 L159 111 L132 73 L104 115Z" fill="${hair}"/>`
+      : `<path d="M72 91 Q93 43 129 67 Q167 43 188 91 L164 113 Q141 95 130 70 Q112 104 91 119Z" fill="${hair}"/>`;
+    const accessory = style==='braid'?`<circle cx="49" cy="238" r="12" fill="${accent}"/>`:style==='wing'?`<path d="M52 82 20 56 34 101 11 122 54 119" fill="none" stroke="${accent}" stroke-width="7"/><path d="M208 82 240 56 226 101 249 122 206 119" fill="none" stroke="${accent}" stroke-width="7"/>`:style==='veil'?`<path d="M130 33 142 55 130 71 118 55Z" fill="${accent}"/>`:style==='crown'?`<circle cx="130" cy="27" r="10" fill="${accent}"/>`:`<path d="M130 43 142 58 130 70 118 58Z" fill="${accent}"/>`;
+    const halo=opt.halo?`<circle cx="130" cy="125" r="106" fill="none" stroke="${accent}" stroke-opacity=".22" stroke-width="2"/><circle cx="130" cy="125" r="92" fill="none" stroke="${accent}" stroke-opacity=".12" stroke-dasharray="4 8"/>`:'';
+    return `<svg viewBox="0 0 260 300" role="img" aria-label="${profile.name||'goddess'}"><defs><radialGradient id="bg${style}" cx="50%" cy="35%"><stop stop-color="${accent}" stop-opacity=".18"/><stop offset="1" stop-color="${hair2}" stop-opacity="0"/></radialGradient></defs><rect width="260" height="300" rx="26" fill="url(#bg${style})"/>${halo}${backHair}<path d="M99 203 L93 239 Q65 248 50 279 L210 279 Q195 248 167 239 L161 203Z" fill="#f5d8d6"/><path d="M77 260 Q130 222 183 260 L203 300 L57 300Z" fill="${hair2}"/><path d="M92 245 Q130 267 168 245 L157 286 L103 286Z" fill="${accent}" opacity=".72"/><ellipse cx="130" cy="137" rx="65" ry="79" fill="#f7dddd"/><ellipse cx="96" cy="145" rx="17" ry="23" fill="#fff"/><ellipse cx="164" cy="145" rx="17" ry="23" fill="#fff"/><ellipse cx="98" cy="148" rx="9" ry="15" fill="${eye}"/><ellipse cx="162" cy="148" rx="9" ry="15" fill="${eye}"/><circle cx="101" cy="143" r="3" fill="#fff"/><circle cx="165" cy="143" r="3" fill="#fff"/><path d="M83 126 Q98 116 112 125" fill="none" stroke="${hair2}" stroke-width="4" stroke-linecap="round"/><path d="M148 125 Q163 116 177 126" fill="none" stroke="${hair2}" stroke-width="4" stroke-linecap="round"/><path d="M130 153 Q125 169 132 172" fill="none" stroke="#d59698" stroke-width="2"/><path d="M115 188 Q130 198 145 188" fill="none" stroke="#a85665" stroke-width="3" stroke-linecap="round"/><ellipse cx="87" cy="177" rx="13" ry="6" fill="#ff91ad" opacity=".3"/><ellipse cx="173" cy="177" rx="13" ry="6" fill="#ff91ad" opacity=".3"/>${fringe}${accessory}</svg>`;
+  }
+  function manifestSVG(a,b){
+    const actor=GODDESSES[a], medium=GODDESSES[b];
+    const profile={...actor,name:PAIRS[a+b].girl,accent:medium.accent,eye:medium.eye,style:a===b?actor.style:medium.style};
+    return portraitSVG(profile,{full:true,halo:true});
+  }
+
+  function openCodex(tab='symbols'){
+    $('#codexModal').classList.add('open'); renderCodex(tab);
+  }
+  function renderCodex(tab){
+    $$('.codex-tabs button').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
+    if(tab==='symbols'){
+      $('#codexContent').innerHTML=`<div class="codex-grid">${Object.entries(CARD_LIBRARY).map(([id,c])=>`<article class="codex-entry"><div class="entry-top"><span class="entry-glyph" style="color:${COLORS[c.color]}">${c.glyph}</span><div><h3>${c.name}</h3><small>${COLOR_NAMES[c.color]} · ${ZONES[c.zone].name} · ${'●'.repeat(c.pips)}</small></div></div><p>${c.copy}</p></article>`).join('')}</div>`;
+    } else if(tab==='pairs'){
+      $('#codexContent').innerHTML=`<div class="pair-matrix">${Object.entries(PAIRS).map(([key,p])=>`<article class="pair-cell ${state.discoveries.has(key)?'':'locked'}" style="--a:${COLORS[key[0]]};--b:${COLORS[key[1]]}"><span style="color:${COLORS[key[0]]}">${COLOR_NAMES[key[0]][0]}</span> → <span style="color:${COLORS[key[1]]}">${COLOR_NAMES[key[1]][0]}</span><b>${state.discoveries.has(key)?p.girl:'UNDISCOVERED'}</b><small>${state.discoveries.has(key)?p.copy:'Invoke this ordered pair to witness her.'}</small></article>`).join('')}</div>`;
+    } else {
+      $('#codexContent').innerHTML=`<div class="law-copy"><section><h3>Two-card syntax</h3><p>Every turn accepts exactly two symbols. The first identifies the goddess who acts. The second identifies her object, medium, instrument, or world. Reversing them creates a different manifestation.</p></section><section><h3>Color is physical</h3><p>Every symbol and condition contains red, green, pink, and blue weight. The board shows these quantities as a continuous aura rather than as damage numbers. A successful rite makes the present field resemble the girl’s desired field.</p></section><section><h3>Karmic gravity</h3><p>Played cards gain karmic weight. Heavy symbols return to the hand more readily and awaken at three weight. At five, fate may return them immediately instead of allowing them to disappear into the discard.</p></section><section><h3>Hands, Eyes, Lips, Pockets</h3><p>Hands act. Eyes reveal. Lips make precedent. Pockets preserve unfinished change. A pair sharing a place gains extra magnitude; some locations create more specific consequences.</p></section><section><h3>No enemies</h3><p>A condition is a girl trapped in an impossible arrangement of color. Failure does not kill her, and success does not defeat her. The reading either discovers a livable continuation or closes before one appears.</p></section><section><h3>Harmony</h3><p>Cross the pale threshold and remain there for the required number of rites. The condition drifts after each invocation, so momentary similarity is not enough; the new relation must hold.</p></section></div>`;
+    }
+  }
+
+  let audio=null;
+  function playRiteSound(a,b){
+    if(!state.sound) return;
+    if(!audio) audio=new (window.AudioContext||window.webkitAudioContext)();
+    const notes={r:196,g:261.63,p:329.63,b:392};
+    [notes[a],notes[b],Math.sqrt(notes[a]*notes[b])*2].forEach((freq,i)=>{
+      const osc=audio.createOscillator(), gain=audio.createGain(); osc.type=i===2?'sine':'triangle'; osc.frequency.value=freq;
+      gain.gain.setValueAtTime(.0001,audio.currentTime+i*.08); gain.gain.exponentialRampToValueAtTime(.08,audio.currentTime+i*.08+.02); gain.gain.exponentialRampToValueAtTime(.0001,audio.currentTime+i*.08+.55);
+      osc.connect(gain).connect(audio.destination); osc.start(audio.currentTime+i*.08); osc.stop(audio.currentTime+i*.08+.6);
+    });
+  }
+  function initSky(){
+    const c=$('#sky'),ctx=c.getContext('2d'); let stars=[];
+    const resize=()=>{ const d=devicePixelRatio||1;c.width=innerWidth*d;c.height=innerHeight*d;c.style.width=innerWidth+'px';c.style.height=innerHeight+'px';ctx.setTransform(d,0,0,d,0,0);stars=Array.from({length:Math.min(180,Math.floor(innerWidth*innerHeight/8000))},()=>({x:Math.random()*innerWidth,y:Math.random()*innerHeight,r:Math.random()*1.3+.2,s:Math.random()*.15+.03,o:Math.random()*.6+.15}));}; resize(); addEventListener('resize',resize);
+    const draw=()=>{ctx.clearRect(0,0,innerWidth,innerHeight);for(const s of stars){s.y+=s.s;if(s.y>innerHeight)s.y=0;ctx.globalAlpha=s.o;ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fill();}ctx.globalAlpha=1;requestAnimationFrame(draw)};draw();
+  }
+  function initTitle(){
+    $('#titleGoddesses').innerHTML=Object.values(GODDESSES).map(g=>`<div class="title-goddess">${portraitSVG(g,{full:true,halo:true})}<small>${g.name.toUpperCase()}</small></div>`).join('');
+    updateHeader();
+  }
+  function showScreen(name){
+    state.screen=name; $$('.screen').forEach(s=>s.classList.remove('active')); $(`#${name}Screen`).classList.add('active');
+  }
+  function toast(text){ const t=$('#toast');t.textContent=text;t.classList.add('show');clearTimeout(toast.timer);toast.timer=setTimeout(()=>t.classList.remove('show'),1800); }
+  function wait(ms){ return new Promise(r=>setTimeout(r,ms)); }
+  function roman(n){ return ['I','II','III','IV','V'][n-1]||n; }
+
+  $('#beginButton').addEventListener('click',startRun);
+  $('#restartButton').addEventListener('click',()=>{ $('#endModal').classList.remove('open'); startRun(); });
+  $('#brand').addEventListener('click',()=>{ $$('.modal').forEach(m=>m.classList.remove('open')); showScreen('title'); });
+  $('#undoButton').addEventListener('click',undo); $('#invokeButton').addEventListener('click',invoke);
+  $('#codexButton').addEventListener('click',()=>openCodex());
+  $('#glossToggle').addEventListener('click',()=>{ state.gloss=!state.gloss;document.body.classList.toggle('gloss',state.gloss);$('#glossToggle').setAttribute('aria-pressed',state.gloss); });
+  $('#soundButton').addEventListener('click',()=>{ state.sound=!state.sound;$('#soundButton').setAttribute('aria-pressed',state.sound);toast(state.sound?'The cards may sing.':'The cards fall silent.'); });
+  $$('[data-close]').forEach(b=>b.addEventListener('click',()=>$('#'+b.dataset.close).classList.remove('open')));
+  $$('.codex-tabs button').forEach(b=>b.addEventListener('click',()=>renderCodex(b.dataset.tab)));
+  document.addEventListener('keydown',e=>{ if(e.key==='Escape') $$('.modal').forEach(m=>m.classList.remove('open')); if(state.screen==='game'&&!state.animating){ if(e.key==='1'||e.key==='2'||e.key==='3'||e.key==='4'||e.key==='5') state.hand[+e.key-1]&&selectCard(state.hand[+e.key-1].uid); if(e.key==='Enter'&&state.selected.length===2) invoke(); if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z')undo(); }});
+
+  initSky(); initTitle();
 })();
