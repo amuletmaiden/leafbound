@@ -1,136 +1,216 @@
-# LEAFBOUND design document
+# LEAFBOUND — Design Law
 
 ## Thesis
 
-Most deckbuilders treat cards as actions applied to an already-defined combat state. LEAFBOUND treats the cards as a temporary ontology. The player does not merely choose what to do inside the world; the player chooses what kinds of events can constitute the world this turn.
+LEAFBOUND is a roguelite deckbuilder in the structural sense—draw, compose, transform, draft, repeat—but it rejects the dominant combat grammar of attack, block, damage, and hit points.
 
-The useful design question is not “what new card keyword can be added?” It is “what familiar game object can be made causally downstream of the deck’s grammar?”
+A card is a tarot symbol. A turn is an ordered two-symbol sentence. An encounter is a girl whose physical color-field has become impossible to inhabit. Play does not defeat her; it discovers a continuation in which she can exist.
 
-## 1. Possibility-spectrum combat
+The game should feel like reading tarot, operating a machine, composing a spell, and learning a private visual language at once.
 
-At the start of each enemy turn, generate a small conflict family of coherent enemy futures. A future is a condition with visible collapse predicates. The player’s law monotonically removes futures as it is written.
+## The irreducible rule
 
-The system creates three layers of strategy:
+Play exactly two cards every turn.
 
-1. **Immediate card value** — damage, ward, healing, draw.
-2. **Grammatical value** — the pair made with the previous card.
-3. **Counterfactual value** — which enemy futures become impossible because the card occupied this position.
+- Card I identifies the acting goddess.
+- Card II identifies her object, medium, instrument, place, or law.
+- I → II differs from II → I.
 
-A weak card can therefore be the correct play because its color, direction, or position removes the only catastrophic future.
+The system has four base colors and therefore sixteen ordered color products. Each product has:
 
-### Expansion
+- a manifestation-girl
+- a visual composition
+- a characteristic vector operation
+- a poetic name
+- a discoverable codex entry
 
-A production version should generate spectra from a real incompatibility graph. Each candidate future is a node; an edge joins futures that cannot coexist in the same local world. The displayed spectrum can then expose independent coherent sets, not only individual intents. Bosses may attack by changing the graph itself: adding compatibility edges, hiding nodes, or making two futures inseparable.
+Examples:
 
-## 2. Directional grammar
+- Green → Blue: **The Siren**. Connection travels through distance and pulls the field toward desire.
+- Blue → Green: **The Mermaid**. Law becomes habitable and smooths violent differences.
+- Pink → Red: **A New Heart**. Decay completes its circuit and returns as a changed self.
+- Blue → Pink: **Law Unwrites Itself**. The most excessive certainty is permitted to disappear.
 
-The four colors are typed operators:
+## Cards
 
-- HEART supplies subject, origin, self, and verdict.
-- LOVE supplies attention, witness, mercy, and binding.
-- POWER supplies process, decay, fermentation, and change.
-- TEMPLE supplies object, foundation, law, and containment.
+Cards are wordless during play.
 
-Every ordered pair has a distinct effect. This makes sequence order structural rather than a combo counter. The deck’s combinatorial space lives between cards.
+A face contains:
 
-### Production extension: inflection
+- one large symbol
+- one dominant semantic color
+- optional secondary-color division
+- one to three magnitude pips
+- one body-place glyph
+- visible karmic weight after repeated use
 
-Cards should eventually have edge-inflections as well as colors. A card could enter as noun, verb, qualifier, or witness. A four-card law would be parsed into an executable rule rather than looked up as a fixed combo.
+Names and explanations live in tooltips and the codex. The player may enable a gloss mode that adds names to card faces.
 
-Example:
+### Starting cadence
 
-> HEART(subject) → LOVE(witness) → POWER(verb) → TEMPLE(object)
->
-> “The witnessed self transforms the law.”
+The starter deck is intentionally asymmetric:
 
-The engine could compile this into a temporary event listener whose predicate and consequence are assembled from the four cards.
+**R G B R G B P**
 
-## 3. Chorus of Precedent
+This teaches the three stable colors twice before introducing transformation once. Pink initially feels rare, dangerous, and precious rather than merely being the fourth suit in a balanced starter pack.
 
-Pair repetition is stored as precedent. A relation’s mechanical force grows because the world has seen it happen before.
+### Magnitude
 
-This replaces the standard “build archetype” signal with an endogenous one. The run does not announce that the player has a poison deck; the player repeatedly writes POWER → LOVE until rot blooming becomes constitutional habit.
+Numbers exist internally, but the face communicates magnitude through pips. This preserves exact rules without making the board feel like spreadsheet combat.
 
-### Production extension: precedent disputes
+### Karmic gravity
 
-Enemies should cite, distinguish, or overturn precedent:
+Every use adds karmic weight to both symbols.
 
-- **Cite:** use one of the player’s established pair effects.
-- **Distinguish:** temporarily make a familiar pair behave differently under a special fact.
-- **Overturn:** erase power from a precedent but leave its historical record.
-- **Dissent:** preserve a defeated rule as a minority effect that may return later.
+Consequences:
 
-This makes law a contested shared memory rather than a private buff list.
+- weighted symbols are drawn earlier during reshuffles
+- at three weight the card awakens and gains magnitude
+- at five weight it may return directly to fate instead of entering discard
+- repeated ordered pairs gather precedent through Lips and the Bird Choir omen
 
-## 4. Fermentation instead of upgrades
+Karma makes a deck remember what the player has actually done, rather than only what they drafted.
 
-Use ages a card. At three rot, it changes behavior. The transformed behavior is related but not necessarily numerically superior.
+## Four physical colors
 
-This creates deckbuilding through duration. A card’s identity records how much history has passed through it. Rewards can care about age, freshness, decay diversity, or the exact turn on which fermentation occurs.
+Every card, condition, and operation has an RGՓB vector. Pink is written `p` internally so blue can remain `b`.
 
-### Production extension: decomposition
+### Red — Heart
 
-A mortal compound card should decompose into its own terms rather than into a generic scrap. A HEART/POWER card could die into one HEART seed and one POWER residue, changing deck topology while preserving semantic conservation.
+Self, action, motion, declaration, strength, heat, blood, sun.
 
-## 5. Conditions, not spawned enemies
+Physical tendency: assertion, incarnation, directed transfer.
 
-An encounter is a world entering a condition. The opponent is rendered as the visible consequence of that condition. Victory does not kill a named creature; it makes the condition unable to complete itself.
+### Green — Love
 
-This supports encounter designs unlike conventional monster fights:
+Connection, life, witness, sight, relation, garden, growth.
 
-- a continent becoming too lawful;
-- a starfall whose observed falls turn gold;
-- an open crown attempting to become hermetic;
-- a goddess climbing from impulse to legislation;
-- hunger moving backward through an ecology.
+Physical tendency: filling deficits, equalization, attraction toward desired states.
 
-## 6. World-memory presentation
+### Pink — Power
 
-LEAF treats accumulated paint as memory. A production version should retain visible traces across the whole run:
+Decay, fermentation, metamorphosis, rot, inversion, becoming.
 
-- every collapsed future leaves a faint absent shape;
-- repeated pairs synchronize particles into a shared rhythm;
-- fermented cards permanently tint the world’s record layer;
-- previous boss laws remain as geometric scars in later arenas.
+Physical tendency: swapping, rotating, delaying, converting surplus into another channel.
 
-The field should become a visual autobiography of the run, not a fresh background per room.
+### Blue — Temple
 
-## 7. Roguelite map without rooms
+Law, stillness, space, distance, vessel, mirror, moon, tower.
 
-The overworld should be a growing possibility tree. The player does not select a room icon. The player prunes branches by choosing what kind of world can follow.
+Physical tendency: smoothing, freezing drift, storing change, removing excess certainty.
 
-Rewards are then not three offered cards. They are three future ecologies. Choosing one changes the next encounter pool, card pool, and physical background simultaneously.
+Color is load-bearing. It is not a decorative rarity system.
 
-## 8. Production roadmap
+## Conditions instead of enemies
 
-### Milestone A — systemic alpha
+A condition has:
 
-- executable four-clause rule compiler;
-- conflict-graph spectra;
-- 60 cards and 8 conditions;
-- precedent citation/dispute system;
-- record-layer persistence across encounters.
+- a current color vector
+- a desired color vector
+- a characteristic drift
+- a harmony threshold
+- a number of consecutive stable rites required
+- a limited reading length
+- a girl embodiment
 
-### Milestone B — content alpha
+Harmony is based on distance between the current and desired fields. The player sees both as circular color auras. Exact component values remain hidden in the normal interface, encouraging visual judgment rather than arithmetic optimization.
 
-- four playable selves with different grammatical privileges;
-- 3 acts, 24 conditions, 6 outer-condition bosses;
-- decomposing compounds and multi-color cards;
-- possibility-tree overworld;
-- full accessibility and controller support.
+When the field crosses the threshold, it must remain there. Conditions drift after rites, so a momentary solution may not constitute a livable law.
 
-### Milestone C — visual production
+Failure text must never imply death, injury, conquest, or moral inferiority. The reading closed. The condition hardened. Another reading may find another continuation.
 
-- WebGL2 renderer with signed-distance-field figures;
-- bloom, occlusion, semantic light mixing, and persistent paint buffers;
-- authored figure silhouettes combined with procedural law fields;
-- adaptive generative score in four harmonic systems.
+## The four body-places
 
-## Design constraints
+### Hands
 
-- Color may never become mere rarity or damage type.
-- No figure is created by a function named after the figure; figures arise when conditions are satisfied.
-- Rot is not framed as moral corruption or simple loss.
-- Same-color adjacency remains an exceptional event with structural meaning.
-- Hidden intelligence must be learned from changed behavior, not announced as a level number.
-- Pace may alter elapsed presentation time but never split the world into inconsistent clocks.
+Immediate agency and direct manipulation.
+
+### Eyes
+
+Sight, comparison, revelation, and sensitivity to the desired field.
+
+### Lips
+
+Invocation, repetition, precedent, and spoken law.
+
+### Pockets
+
+Storage, delay, concealment, and unfinished operations.
+
+A pair sharing a body-place gains additional magnitude. Specific cards and locations elaborate these meanings.
+
+## Locations and omens
+
+Randomness should not come only from draw order. Each condition is read through a row of three locations/omens. The active omen advances each turn.
+
+Current examples:
+
+- **Solar Orchard** — red and green carry farther
+- **Moon Pool** — the second symbol speaks more loudly
+- **Moth Weather** — karma leaves pink residue
+- **Swan Stair** — matching body-places arrest drift
+- **Bird Choir** — repeated pair-laws gather a chorus
+- **Pocket Eclipse** — stored operations return with doubled weight
+- **Glass Garden** — the emptiest color receives mercy
+- **Silent Tower** — blue operations hold their shape
+
+The same cards therefore mean different things in different places.
+
+## Girls
+
+The game should contain many girls, but they must be systemic rather than decorative rewards pasted over conventional mechanics.
+
+Current layers:
+
+1. Four primary goddesses: Ruby, Garden Maid, Moth Princess, Swan.
+2. Sixteen ordered-pair manifestations.
+3. Four condition-girls.
+4. Future location spirits, card custodians, and route companions.
+
+Art direction:
+
+- unmistakably illustrated and two-dimensional
+- stylized anime proportions
+- clear silhouettes
+- large expressive eyes
+- flat or soft cel shading
+- no simulated photography
+- no 3D skin, pores, lens effects, or faux-real faces
+- costume motifs derived from card symbols and color law
+
+The current build uses procedural SVG portraits so the cast remains crisp, lightweight, and free of uncanny realism.
+
+## Run structure
+
+Current slice:
+
+1. Enter with seven symbols.
+2. Resolve a condition through ordered rites.
+3. Receive three wordless symbols from her opened hand.
+4. Choose one and continue.
+5. Complete four readings, ending with the Star-Devouring Goddess.
+
+Production direction:
+
+- branching possibility-tree overworld rather than a map of combat nodes
+- companion girls who modify syntax rather than add passive damage
+- tarot reversals and card orientation
+- genuinely bifacial symbols whose active color depends on position
+- persistent card patina, edge wear, annotations, and visual karma
+- condition-specific grammars and alternative resolutions
+- pair manifestations that develop relationships and memories across runs
+- richer vector operations derived directly from card RGB values
+- deterministic replay seed presented as a reading spread
+
+## Principles that must remain true
+
+1. No generic attack/block economy.
+2. No health bars hidden behind synonyms.
+3. Cards remain symbols first and text boxes last.
+4. Exactly two cards form the core sentence.
+5. Order remains significant.
+6. Color remains semantic and physical.
+7. Girls embody mechanics rather than decorate them.
+8. Rot is transformation, not automatic punishment.
+9. Failure preserves dignity and possibility.
+10. The player should learn by witnessing repeated visual law.
