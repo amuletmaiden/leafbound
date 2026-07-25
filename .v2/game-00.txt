@@ -1,0 +1,57 @@
+(() => {
+  'use strict';
+
+  const $ = (s, root = document) => root.querySelector(s);
+  const $$ = (s, root = document) => [...root.querySelectorAll(s)];
+  const clamp = (n, a, b) => Math.max(a, Math.min(b, n));
+  const sum = (v) => v.r + v.g + v.p + v.b;
+  const COLORS = { r: '#ff2037', g: '#00ff76', p: '#ff00ff', b: '#00c8ff' };
+  const COLOR_NAMES = { r: 'HEART', g: 'LOVE', p: 'POWER', b: 'TEMPLE' };
+  const GODDESSES = {
+    r: { name: 'Ruby', title: 'THE SOVEREIGN SELF', hair: '#e51e3b', hair2: '#7b0718', eye: '#ffd4cc', accent: COLORS.r, style: 'flare' },
+    g: { name: 'Garden Maid', title: 'THE BELOVED WITNESS', hair: '#42e891', hair2: '#087c4b', eye: '#072d20', accent: COLORS.g, style: 'braid' },
+    p: { name: 'Moth Princess', title: 'THE BEAUTIFUL CHANGE', hair: '#ff71e8', hair2: '#9c168e', eye: '#4d083f', accent: COLORS.p, style: 'wing' },
+    b: { name: 'Swan', title: 'THE STILL LAW', hair: '#73ddff', hair2: '#12679b', eye: '#062e4c', accent: COLORS.b, style: 'veil' }
+  };
+  const ZONES = {
+    hands: { glyph: '✋', name: 'Hands', copy: 'Immediate agency. Same-zone rites become decisive.' },
+    eyes: { glyph: '◉', name: 'Eyes', copy: 'Sight and revelation. The target field becomes easier to read.' },
+    lips: { glyph: '⌒', name: 'Lips', copy: 'Invocation. Repeated pair-laws gather force.' },
+    pockets: { glyph: '▱', name: 'Pockets', copy: 'Delay and storage. Surplus can be kept rather than destroyed.' }
+  };
+
+  const CARD_LIBRARY = {
+    sun:      { glyph: '☉', name: 'Sun', color: 'r', pips: 2, zone: 'hands', vector: {r:7,g:1,p:0,b:2}, copy: 'Declares the acting self and produces motion.' },
+    eye:      { glyph: '◉', name: 'Green Eye', color: 'g', pips: 2, zone: 'eyes', vector: {r:0,g:7,p:1,b:2}, copy: 'Sees connection, living deficits, and concealed desire.' },
+    mirror:   { glyph: '◇', name: 'Mirror', color: 'b', pips: 2, zone: 'eyes', vector: {r:1,g:1,p:1,b:7}, copy: 'Makes structure visible and lets a condition compare itself.' },
+    flame:    { glyph: '♨', name: 'Flame', color: 'r', pips: 3, zone: 'lips', vector: {r:8,g:0,p:2,b:0}, copy: 'A spoken motion. Strong, bright, and difficult to retract.' },
+    garden:   { glyph: '❈', name: 'Garden', color: 'g', pips: 3, zone: 'hands', vector: {r:1,g:8,p:1,b:0}, copy: 'Fills absence with a living relation.' },
+    swan:     { glyph: '♧', name: 'Swan', color: 'b', pips: 3, zone: 'pockets', vector: {r:0,g:2,p:0,b:8}, copy: 'Carries law inside softness and stores stillness.' },
+    moth:     { glyph: 'ϟ', name: 'Moth', color: 'p', pips: 2, zone: 'lips', vector: {r:1,g:2,p:7,b:0}, copy: 'Turns what is already happening into another kind of happening.' },
+    ruby:     { glyph: '◆', name: 'Ruby', color: 'r', pips: 1, zone: 'pockets', vector: {r:6,g:0,p:2,b:2}, copy: 'A portable self. It can be kept, lost, or incarnated.' },
+    birds:    { glyph: '⋀⋁', name: 'Birds', color: 'g', split: 'p', pips: 2, zone: 'lips', vector: {r:0,g:5,p:4,b:1}, copy: 'Connection taking flight through transformation.' },
+    moon:     { glyph: '☾', name: 'Moon', color: 'b', split: 'p', pips: 2, zone: 'eyes', vector: {r:0,g:1,p:4,b:5}, copy: 'Law seen indirectly: a mirror that changes what it reflects.' },
+    tower:    { glyph: '⌂', name: 'Tower', color: 'b', split: 'r', pips: 3, zone: 'hands', vector: {r:3,g:0,p:0,b:7}, copy: 'Motion made architectural. A force that remembers its boundary.' },
+    butterfly:{ glyph: '⋈', name: 'Butterfly', color: 'p', split: 'g', pips: 3, zone: 'hands', vector: {r:0,g:4,p:6,b:0}, copy: 'A completed metamorphosis that can seed another.' },
+    lips:     { glyph: '⌒', name: 'Lips', color: 'p', split: 'r', pips: 1, zone: 'lips', vector: {r:3,g:0,p:5,b:2}, copy: 'The transformation caused by saying a thing aloud.' },
+    pocket:   { glyph: '▱', name: 'Pocket', color: 'b', split: 'g', pips: 1, zone: 'pockets', vector: {r:0,g:3,p:1,b:6}, copy: 'A hidden place where an unfinished operation may persist.' },
+    nova:     { glyph: '✺', name: 'Nova', color: 'r', split: 'p', pips: 3, zone: 'eyes', vector: {r:5,g:0,p:5,b:0}, copy: 'A self transformed so quickly that it becomes an event.' },
+    meridian: { glyph: '⊕', name: 'Meridian', color: 'g', split: 'b', pips: 2, zone: 'pockets', vector: {r:0,g:5,p:0,b:5}, copy: 'A two-sided path: green on one face, blue on the other.' },
+    seed:     { glyph: '•', name: 'Seed', color: 'g', pips: 1, zone: 'pockets', vector: {r:1,g:6,p:2,b:1}, copy: 'Small magnitude, enormous futurity.' },
+    eclipse:  { glyph: '◑', name: 'Eclipse', color: 'p', split: 'b', pips: 3, zone: 'eyes', vector: {r:1,g:0,p:5,b:4}, copy: 'A transformation whose law is temporarily hidden.' }
+  };
+
+  const STARTER = ['sun','eye','mirror','flame','garden','swan','moth']; // RGBRGBP
+  const REWARDS = ['ruby','birds','moon','tower','butterfly','lips','pocket','nova','meridian','seed','eclipse'];
+
+  const PAIRS = {
+    rr:{ name:'RUBY ASCENDANT', girl:'The Ruby Queen', copy:'The self asserts the exact amount of motion it requires.' },
+    rg:{ name:'THE AWAKENING GARDEN', girl:'Garden Ruby', copy:'Strength enters connection; what was dormant begins to answer.' },
+    rp:{ name:'BLOOD FERMENTS', girl:'The Wine Princess', copy:'Motion becomes transformation without ceasing to be itself.' },
+    rb:{ name:'THE SOVEREIGN CLAUSE', girl:'Tower Maiden', copy:'The self writes a boundary and makes force inhabitable.' },
+    gr:{ name:'THE BELOVED SELF', girl:'Devoted Maid', copy:'Connection returns to the one who produced it.' },
+    gg:{ name:'THE MAIDEN GARDEN', girl:'The Verdant Maid', copy:'Life fills the deepest absence first.' },
+    gp:{ name:'BIRDS OF CHANGE', girl:'Butterfly Shepherd', copy:'Growth accepts decay and leaves the old shape willingly.' },
+    gb:{ name:'THE SIREN', girl:'Siren of the Green Moon', copy:'Connection travels through distance and draws the field toward desire.' },
+    pr:{ name:'A NEW HEART', girl:'Nova Princess', copy:'Decay completes its circuit and returns as a changed self.' },
+    pg:{ na
