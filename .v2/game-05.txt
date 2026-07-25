@@ -1,0 +1,38 @@
+3 142 55 130 71 118 55Z" fill="${accent}"/>`:style==='crown'?`<circle cx="130" cy="27" r="10" fill="${accent}"/>`:`<path d="M130 43 142 58 130 70 118 58Z" fill="${accent}"/>`;
+    const halo=opt.halo?`<circle cx="130" cy="125" r="106" fill="none" stroke="${accent}" stroke-opacity=".22" stroke-width="2"/><circle cx="130" cy="125" r="92" fill="none" stroke="${accent}" stroke-opacity=".12" stroke-dasharray="4 8"/>`:'';
+    return `<svg viewBox="0 0 260 300" role="img" aria-label="${profile.name||'goddess'}"><defs><radialGradient id="bg${style}" cx="50%" cy="35%"><stop stop-color="${accent}" stop-opacity=".18"/><stop offset="1" stop-color="${hair2}" stop-opacity="0"/></radialGradient></defs><rect width="260" height="300" rx="26" fill="url(#bg${style})"/>${halo}${backHair}<path d="M99 203 L93 239 Q65 248 50 279 L210 279 Q195 248 167 239 L161 203Z" fill="#f5d8d6"/><path d="M77 260 Q130 222 183 260 L203 300 L57 300Z" fill="${hair2}"/><path d="M92 245 Q130 267 168 245 L157 286 L103 286Z" fill="${accent}" opacity=".72"/><ellipse cx="130" cy="137" rx="65" ry="79" fill="#f7dddd"/><ellipse cx="96" cy="145" rx="17" ry="23" fill="#fff"/><ellipse cx="164" cy="145" rx="17" ry="23" fill="#fff"/><ellipse cx="98" cy="148" rx="9" ry="15" fill="${eye}"/><ellipse cx="162" cy="148" rx="9" ry="15" fill="${eye}"/><circle cx="101" cy="143" r="3" fill="#fff"/><circle cx="165" cy="143" r="3" fill="#fff"/><path d="M83 126 Q98 116 112 125" fill="none" stroke="${hair2}" stroke-width="4" stroke-linecap="round"/><path d="M148 125 Q163 116 177 126" fill="none" stroke="${hair2}" stroke-width="4" stroke-linecap="round"/><path d="M130 153 Q125 169 132 172" fill="none" stroke="#d59698" stroke-width="2"/><path d="M115 188 Q130 198 145 188" fill="none" stroke="#a85665" stroke-width="3" stroke-linecap="round"/><ellipse cx="87" cy="177" rx="13" ry="6" fill="#ff91ad" opacity=".3"/><ellipse cx="173" cy="177" rx="13" ry="6" fill="#ff91ad" opacity=".3"/>${fringe}${accessory}</svg>`;
+  }
+  function manifestSVG(a,b){
+    const actor=GODDESSES[a], medium=GODDESSES[b];
+    const profile={...actor,name:PAIRS[a+b].girl,accent:medium.accent,eye:medium.eye,style:a===b?actor.style:medium.style};
+    return portraitSVG(profile,{full:true,halo:true});
+  }
+
+  function openCodex(tab='symbols'){
+    $('#codexModal').classList.add('open'); renderCodex(tab);
+  }
+  function renderCodex(tab){
+    $$('.codex-tabs button').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
+    if(tab==='symbols'){
+      $('#codexContent').innerHTML=`<div class="codex-grid">${Object.entries(CARD_LIBRARY).map(([id,c])=>`<article class="codex-entry"><div class="entry-top"><span class="entry-glyph" style="color:${COLORS[c.color]}">${c.glyph}</span><div><h3>${c.name}</h3><small>${COLOR_NAMES[c.color]} · ${ZONES[c.zone].name} · ${'●'.repeat(c.pips)}</small></div></div><p>${c.copy}</p></article>`).join('')}</div>`;
+    } else if(tab==='pairs'){
+      $('#codexContent').innerHTML=`<div class="pair-matrix">${Object.entries(PAIRS).map(([key,p])=>`<article class="pair-cell ${state.discoveries.has(key)?'':'locked'}" style="--a:${COLORS[key[0]]};--b:${COLORS[key[1]]}"><span style="color:${COLORS[key[0]]}">${COLOR_NAMES[key[0]][0]}</span> → <span style="color:${COLORS[key[1]]}">${COLOR_NAMES[key[1]][0]}</span><b>${state.discoveries.has(key)?p.girl:'UNDISCOVERED'}</b><small>${state.discoveries.has(key)?p.copy:'Invoke this ordered pair to witness her.'}</small></article>`).join('')}</div>`;
+    } else {
+      $('#codexContent').innerHTML=`<div class="law-copy"><section><h3>Two-card syntax</h3><p>Every turn accepts exactly two symbols. The first identifies the goddess who acts. The second identifies her object, medium, instrument, or world. Reversing them creates a different manifestation.</p></section><section><h3>Color is physical</h3><p>Every symbol and condition contains red, green, pink, and blue weight. The board shows these quantities as a continuous aura rather than as damage numbers. A successful rite makes the present field resemble the girl’s desired field.</p></section><section><h3>Karmic gravity</h3><p>Played cards gain karmic weight. Heavy symbols return to the hand more readily and awaken at three weight. At five, fate may return them immediately instead of allowing them to disappear into the discard.</p></section><section><h3>Hands, Eyes, Lips, Pockets</h3><p>Hands act. Eyes reveal. Lips make precedent. Pockets preserve unfinished change. A pair sharing a place gains extra magnitude; some locations create more specific consequences.</p></section><section><h3>No enemies</h3><p>A condition is a girl trapped in an impossible arrangement of color. Failure does not kill her, and success does not defeat her. The reading either discovers a livable continuation or closes before one appears.</p></section><section><h3>Harmony</h3><p>Cross the pale threshold and remain there for the required number of rites. The condition drifts after each invocation, so momentary similarity is not enough; the new relation must hold.</p></section></div>`;
+    }
+  }
+
+  let audio=null;
+  function playRiteSound(a,b){
+    if(!state.sound) return;
+    if(!audio) audio=new (window.AudioContext||window.webkitAudioContext)();
+    const notes={r:196,g:261.63,p:329.63,b:392};
+    [notes[a],notes[b],Math.sqrt(notes[a]*notes[b])*2].forEach((freq,i)=>{
+      const osc=audio.createOscillator(), gain=audio.createGain(); osc.type=i===2?'sine':'triangle'; osc.frequency.value=freq;
+      gain.gain.setValueAtTime(.0001,audio.currentTime+i*.08); gain.gain.exponentialRampToValueAtTime(.08,audio.currentTime+i*.08+.02); gain.gain.exponentialRampToValueAtTime(.0001,audio.currentTime+i*.08+.55);
+      osc.connect(gain).connect(audio.destination); osc.start(audio.currentTime+i*.08); osc.stop(audio.currentTime+i*.08+.6);
+    });
+  }
+  function initSky(){
+    const c=$('#sky'),ctx=c.getContext('2d'); let stars=[];
+    const resize=()=>{ const d=devicePixelRatio||1;c.width=innerWidth*d;c.height=innerHeight*d;c.styl
