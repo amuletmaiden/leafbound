@@ -1,0 +1,73 @@
+me:'THE CHRYSALIS', girl:'Moth Gardener', copy:'Transformation is kept alive long enough to bloom later.' },
+    pp:{ name:'BEAUTIFUL ROT', girl:'The Pink Empress', copy:'Surplus and deficit exchange masks.' },
+    pb:{ name:'THE SEALED WING', girl:'Veiled Moth', copy:'Change is stored beneath law instead of being lost.' },
+    br:{ name:'LAW INCARNATE', girl:'Ruby Swan', copy:'Stillness grows a body and enters the world as motion.' },
+    bg:{ name:'THE MERMAID', girl:'Mermaid of the Quiet Garden', copy:'Law becomes habitable and smooths every violent difference.' },
+    bp:{ name:'LAW UNWRITES ITSELF', girl:'Mirror Moth', copy:'The most excessive certainty is permitted to disappear.' },
+    bb:{ name:'THE ROUND HORIZON', girl:'The White Swan', copy:'The field becomes still enough to resemble its desire.' }
+  };
+
+  const OMENS = [
+    {id:'orchard',glyph:'☉',name:'Solar Orchard',copy:'Red and green rites carry farther.', apply(ctx){ if ('rg'.includes(ctx.a) || 'rg'.includes(ctx.b)) ctx.mag *= 1.18; }},
+    {id:'moonpool',glyph:'☾',name:'Moon Pool',copy:'The second symbol speaks more loudly.', apply(ctx){ ctx.mag += spec(ctx.second).pips * .65; }},
+    {id:'mothweather',glyph:'ϟ',name:'Moth Weather',copy:'Karma leaves a pink residue.', apply(ctx){ ctx.residue.p += (ctx.first.karma + ctx.second.karma) * .8; }},
+    {id:'swanstair',glyph:'♧',name:'Swan Stair',copy:'Matching places arrest the next drift.', apply(ctx){ if(spec(ctx.first).zone === spec(ctx.second).zone) ctx.freeze = true; }},
+    {id:'birdchoir',glyph:'⋀⋁',name:'Bird Choir',copy:'A repeated pair-law gathers a chorus.', apply(ctx){ ctx.mag += Math.min(4, (state.pairHistory[ctx.key] || 0) * 1.2); }},
+    {id:'pocketeclipse',glyph:'◑',name:'Pocket Eclipse',copy:'What was kept returns with doubled gravity.', apply(ctx){ ctx.pocketMultiplier = 2; }},
+    {id:'glassgarden',glyph:'◇',name:'Glass Garden',copy:'The emptiest color receives a small mercy.', after(){ nudgeLowestDeficit(2.5); }},
+    {id:'silenttower',glyph:'⌂',name:'Silent Tower',copy:'Blue operations hold their shape.', apply(ctx){ if(ctx.a==='b') ctx.freeze = true; }}
+  ];
+
+  const ENCOUNTERS = [
+    { name:'The Sleeping Gardener', epithet:'Her garden dreams without remembering her.', palette:['#4ff0a0','#104d3d','#00c8ff'], hair:'#55e3a4', hair2:'#0c6a4d', eye:'#143b31', style:'braid', current:{r:8,g:22,p:13,b:57}, target:{r:24,g:48,p:12,b:16}, drift:{r:-1,g:-3,p:2,b:2}, turns:7, threshold:.84, stable:2 },
+    { name:'The Glass Swan', epithet:'Perfect law has made her too beautiful to move.', palette:['#9deaff','#3a83bd','#e5faff'], hair:'#98e7ff', hair2:'#24699d', eye:'#063d63', style:'veil', current:{r:7,g:12,p:8,b:73}, target:{r:21,g:31,p:19,b:29}, drift:{r:-2,g:-1,p:0,b:3}, turns:7, threshold:.86, stable:2 },
+    { name:'The Moth Princess', epithet:'Every possibility is hatching at once.', palette:['#ff85e8','#89167f','#fff0fb'], hair:'#ff82ea', hair2:'#941579', eye:'#550744', style:'wing', current:{r:11,g:18,p:62,b:9}, target:{r:16,g:35,p:34,b:15}, drift:{r:0,g:-2,p:4,b:-2}, turns:8, threshold:.87, stable:2 },
+    { name:'The Star-Devouring Goddess', epithet:'Near her, processes do not stop. They un-happen.', palette:['#ff3155','#ff3ee8','#61dfff'], hair:'#ef4b91', hair2:'#50105d', eye:'#170624', style:'crown', current:{r:44,g:4,p:39,b:13}, target:{r:25,g:25,p:25,b:25}, drift:{r:3,g:-3,p:3,b:-3}, turns:9, threshold:.9, stable:3 }
+  ];
+
+  const ledger = loadLedger();
+  const state = {
+    screen:'title', encounter:0, turn:1, current:null, target:null, omens:[], activeOmen:0,
+    deck:[], draw:[], discard:[], hand:[], selected:[], pocket:[], stable:0, pairHistory:{},
+    resolved:0, sound:false, gloss:false, animating:false, runKarma:0, lastRite:null, freezeNext:false,
+    delayed:[], discoveries:new Set(ledger.discoveries || [])
+  };
+
+  function loadLedger(){
+    try { return JSON.parse(localStorage.getItem('leafbound-ledger-v2') || '{}'); } catch { return {}; }
+  }
+  function saveLedger(){
+    const next={runs:(ledger.runs||0),victories:(ledger.victories||0),discoveries:[...state.discoveries]};
+    try { localStorage.setItem('leafbound-ledger-v2',JSON.stringify(next)); } catch {}
+    Object.assign(ledger,next);
+  }
+  function makeCard(id){ return { uid:cryptoRandom(), id, karma:0 }; }
+  function cryptoRandom(){ return Math.random().toString(36).slice(2,9); }
+  function spec(card){ return CARD_LIBRARY[card.id]; }
+  function dominant(v){ return Object.keys(v).sort((a,b)=>v[b]-v[a])[0]; }
+  function normalize(v){
+    const t=Math.max(.001,sum(v)); const out={};
+    for(const k of 'rgpb') out[k]=clamp(v[k]*100/t,0,100);
+    return out;
+  }
+  function cloneVec(v){ return {r:v.r,g:v.g,p:v.p,b:v.b}; }
+  function errors(){ const e={}; for(const k of 'rgpb') e[k]=state.target[k]-state.current[k]; return e; }
+  function harmony(){
+    let distance=0; for(const k of 'rgpb') distance+=Math.abs(state.current[k]-state.target[k]);
+    return clamp(1-distance/150,0,1);
+  }
+  function nudge(k, delta){ state.current[k]=Math.max(0,state.current[k]+delta); state.current=normalize(state.current); }
+  function transfer(from,to,amount){
+    const a=Math.min(amount,Math.max(0,state.current[from]-1));
+    state.current[from]-=a; state.current[to]+=a; state.current=normalize(state.current);
+  }
+  function mostDeficit(except=[]){ const e=errors(); return Object.keys(e).filter(k=>!except.includes(k)).sort((a,b)=>e[b]-e[a])[0]; }
+  function mostSurplus(except=[]){ const e=errors(); return Object.keys(e).filter(k=>!except.includes(k)).sort((a,b)=>e[a]-e[b])[0]; }
+  function moveToward(k,amount){ const d=state.target[k]-state.current[k]; nudge(k, Math.sign(d)*Math.min(Math.abs(d),amount)); }
+  function moveAllToward(amount){
+    for(const k of 'rgpb') state.current[k]+=clamp(state.target[k]-state.current[k],-amount,amount);
+    state.current=normalize(state.current);
+  }
+  function nudgeLowestDeficit(amount){ const k=mostDeficit(); if(errors()[k]>0) moveToward(k,amount); }
+
+  function pairOper
