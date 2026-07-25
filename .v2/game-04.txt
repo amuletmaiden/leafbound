@@ -1,0 +1,51 @@
+ot-card').forEach(el=>el.addEventListener('click',()=>selectCard(el.dataset.uid)));
+    $('#undoButton').disabled=!state.selected.length; $('#invokeButton').disabled=state.selected.length!==2;
+  }
+  function cardHTML(card,reward=false,selected=false){
+    const c=spec(card), split=c.split?`<div class="card-split" style="--split-color:${COLORS[c.split]}"></div>`:'';
+    return `<button class="tarot-card ${selected?'selected':''} ${card.karma>=3?'awakened':''}" style="--card-color:${COLORS[c.color]}" data-uid="${card.uid}" title="${c.name}: ${c.copy}">
+      ${split}<div class="card-inner"><div class="card-pips">${'<i></i>'.repeat(c.pips)}</div><div class="card-glyph">${c.glyph}</div><div class="card-gloss">${c.name}</div><div class="card-zone">${ZONES[c.zone].glyph}</div><div class="card-karma">${card.karma?`⌁${card.karma}`:''}</div></div></button>`;
+  }
+  function renderSyntax(){
+    const cards=state.selected.map(uid=>state.hand.find(c=>c.uid===uid));
+    fillSlot($('#actorSlot'),cards[0]); fillSlot($('#mediumSlot'),cards[1]);
+    if(!cards.length){ $('#riteName').textContent='CHOOSE THE ACTING SYMBOL'; $('#riteResult').textContent=''; $('#manifestPortrait').innerHTML=''; $('#manifestPortrait').classList.remove('active'); }
+    else if(cards.length===1){ const g=GODDESSES[dominant(spec(cards[0]).vector)]; $('#riteName').textContent=`${g.name.toUpperCase()} WILL ACT`; $('#riteResult').textContent='Choose what she acts on, with, or through.'; $('#manifestPortrait').innerHTML=portraitSVG(g,{full:true}); $('#manifestPortrait').classList.add('active'); }
+    else { const a=dominant(spec(cards[0]).vector),b=dominant(spec(cards[1]).vector),pair=PAIRS[a+b]; $('#riteName').textContent=pair.name; $('#riteResult').textContent=pair.copy; $('#manifestPortrait').innerHTML=manifestSVG(a,b); $('#manifestPortrait').classList.add('active'); }
+    $('#undoButton').disabled=!cards.length; $('#invokeButton').disabled=cards.length!==2;
+  }
+  function fillSlot(el,card){
+    if(!card){ el.className='syntax-slot'; el.innerHTML=`<span>${el.id==='actorSlot'?'Ⅰ':'Ⅱ'}</span>`; return; }
+    const c=spec(card); el.className='syntax-slot filled'; el.style.setProperty('--slot-color',COLORS[c.color]); el.innerHTML=`<span class="mini-symbol">${c.glyph}</span>`;
+  }
+  function renderRoster(){
+    const active=state.selected.length?dominant(spec(state.hand.find(c=>c.uid===state.selected[0])).vector):null;
+    $('#goddessRoster').innerHTML=Object.entries(GODDESSES).map(([k,g])=>`<div class="goddess-chip ${active===k?'active':''}" style="--goddess-color:${g.accent}">${portraitSVG(g,{bust:true})}<div><b>${g.name}</b><small>${g.title}</small></div></div>`).join('');
+  }
+  function renderPocket(){
+    $('#pocketTray').innerHTML=`<div class="panel-kicker">POCKETS</div>`+(state.pocket.length?state.pocket.map(p=>`<div class="pocket-token"><b>▱</b><span>${p.label}<small> ${p.amount.toFixed(1)} weight</small></span></div>`).join(''):'<p>Nothing is being kept.</p>');
+  }
+  function updateHeader(){ $('#resolvedCount').textContent=state.resolved; $('#karmaCount').textContent=state.runKarma; $('#discoveryCount').textContent=state.discoveries.size; }
+  function animateRite(first,second,pair,ctx){
+    $('#riteName').textContent=pair.name; $('#riteResult').textContent=ctx.result||pair.copy; $('#manifestPortrait').innerHTML=manifestSVG(dominant(spec(first).vector),dominant(spec(second).vector)); $('#manifestPortrait').classList.add('active');
+    const wake=$('#colorWake'); wake.innerHTML=''; const colors=[COLORS[spec(first).color],COLORS[spec(second).color]];
+    for(let i=0;i<28;i++){ const p=document.createElement('i'); p.className='wake-particle'; p.style.background=colors[i%2]; p.style.left=`${48+Math.random()*4}%`; p.style.top=`${48+Math.random()*4}%`; p.style.setProperty('--x',`${(Math.random()-.5)*520}px`); p.style.setProperty('--y',`${(Math.random()-.5)*310}px`); p.style.animationDelay=`${Math.random()*.18}s`; wake.appendChild(p); }
+  }
+
+  function portraitSVG(profile,opt={}){
+    const accent=profile.accent||profile.palette?.[0]||'#fff', hair=profile.hair||accent, hair2=profile.hair2||'#222', eye=profile.eye||'#222', style=profile.style||'flare';
+    const backHair = style==='braid'
+      ? `<path d="M73 78 Q45 105 55 222 Q69 246 88 225 L91 105Z" fill="${hair2}"/><path d="M187 78 Q215 105 205 222 Q191 246 172 225 L169 105Z" fill="${hair2}"/><path d="M62 139 Q25 172 51 240" fill="none" stroke="${hair}" stroke-width="18" stroke-linecap="round" stroke-dasharray="13 5"/>`
+      : style==='wing'
+      ? `<path d="M83 70 Q27 87 30 186 Q47 159 73 155 Q42 205 70 246 Q99 199 103 102Z" fill="${hair2}"/><path d="M177 70 Q233 87 230 186 Q213 159 187 155 Q218 205 190 246 Q161 199 157 102Z" fill="${hair2}"/>`
+      : style==='veil'
+      ? `<path d="M64 66 Q28 113 47 248 L92 211 L91 92Z" fill="${hair2}"/><path d="M196 66 Q232 113 213 248 L168 211 L169 92Z" fill="${hair2}"/><path d="M49 100 Q130 30 211 100" fill="none" stroke="${hair}" stroke-width="26" stroke-linecap="round"/>`
+      : style==='crown'
+      ? `<path d="M55 92 L78 35 L105 72 L130 25 L155 72 L183 35 L206 92 Q224 160 192 240 L68 240 Q36 160 55 92Z" fill="${hair2}"/>`
+      : `<path d="M58 95 Q42 42 105 37 Q130 11 158 40 Q218 46 202 108 L185 235 L72 235Z" fill="${hair2}"/>`;
+    const fringe = style==='veil'
+      ? `<path d="M77 91 Q105 52 131 69 Q153 49 184 92 L164 119 Q139 102 130 79 Q114 108 89 123Z" fill="${hair}"/>`
+      : style==='wing'
+      ? `<path d="M72 91 Q91 47 130 67 Q173 44 190 95 L159 111 L132 73 L104 115Z" fill="${hair}"/>`
+      : `<path d="M72 91 Q93 43 129 67 Q167 43 188 91 L164 113 Q141 95 130 70 Q112 104 91 119Z" fill="${hair}"/>`;
+    const accessory = style==='braid'?`<circle cx="49" cy="238" r="12" fill="${accent}"/>`:style==='wing'?`<path d="M52 82 20 56 34 101 11 122 54 119" fill="none" stroke="${accent}" stroke-width="7"/><path d="M208 82 240 56 226 101 249 122 206 119" fill="none" stroke="${accent}" stroke-width="7"/>`:style==='veil'?`<path d="M130 3
