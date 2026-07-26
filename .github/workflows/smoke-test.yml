@@ -1,0 +1,85 @@
+name: Browser smoke test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Check JavaScript syntax
+        run: node --check game.js
+
+      - name: Install browser
+        run: |
+          npm install --no-save playwright@1.54.1
+          npx playwright install --with-deps chromium
+
+      - name: Exercise the actual game entry flow
+        shell: bash
+        run: |
+          python3 -m http.server 4173 >/tmp/leafbound-server.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill $SERVER_PID || true' EXIT
+          node <<'SCRIPT'
+          const { chromium } = require('playwright');
+
+          (async () => {
+            const browser = await chromium.launch({ headless: true });
+            const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
+            const errors = [];
+
+            page.on('pageerror', error => errors.push(`pageerror: ${error.message}`));
+            page.on('console', message => {
+              if (message.type() === 'error') errors.push(`console: ${message.text()}`);
+            });
+
+            await page.goto('http://127.0.0.1:4173/', { waitUntil: 'networkidle' });
+            await page.locator('#beginButton').click();
+            await page.waitForFunction(() => document.querySelector('#gameScreen')?.classList.contains('active'));
+
+            const handCount = await page.locator('#hand .tarot-card').count();
+            if (handCount !== 5) throw new Error(`Expected 5 cards after entry, found ${handCount}`);
+
+            await page.locator('#hand .tarot-card').nth(0).click();
+            await page.locator('#hand .tarot-card').nth(1).click();
+            if (await page.locator('#invokeButton').isDisabled()) throw new Error('Invoke remained disabled after selecting two cards');
+
+            await page.locator('#invokeButton').click();
+            await page.waitForFunction(() => document.querySelector('#turnText')?.textContent?.trim().startsWith('2 /'));
+
+            await page.locator('#codexButton').click();
+            await page.waitForFunction(() => document.querySelector('#codexModal')?.classList.contains('open'));
+            await page.locator('[data-close="codexModal"]').click();
+
+            if (errors.length) throw new Error(errors.join('\n'));
+            await page.screenshot({ path: 'smoke-test.png', fullPage: true });
+            await browser.close();
+          })().catch(error => {
+            console.error(error.stack || error);
+            process.exit(1);
+          });
+          SCRIPT
+
+      - name: Upload smoke screenshot
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: leafbound-smoke
+          path: smoke-test.png
+          if-no-files-found: ignore
