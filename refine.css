@@ -1,0 +1,1 @@
+.card-name{border-top:1px solid color-mix(in srgb,var(--edge) 72%,transparent);border-bottom:1px solid color-mix(in srgb,var(--edge) 42%,transparent);background:rgba(4,13,12,.68);color:color-mix(in srgb,var(--edge) 74%,#edf2df);text-shadow:0 1px 2px #000}.card-name:before,.card-name:after{width:3px;height:3px;background:var(--edge);box-shadow:0 0 5px var(--edge)}

@@ -3,60 +3,34 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#071518">
-  <meta name="description" content="Citadel Seafoam — a six-card combinatorial oracle.">
+  <meta name="theme-color" content="#071517">
   <title>Citadel Seafoam</title>
-  <link rel="manifest" href="manifest.json?v=20260726-cycle">
-  <link rel="icon" href="icon.svg?v=20260726-cycle" type="image/svg+xml">
-  <link rel="stylesheet" href="styles.css?v=20260726-cycle">
+  <link rel="manifest" href="manifest.json?v=20260726-ritual">
+  <link rel="icon" href="icon.svg?v=20260726-ritual" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css?v=20260726-ritual">
+  <link rel="stylesheet" href="refine.css?v=20260726-ritual">
 </head>
 <body>
-  <div class="sky" aria-hidden="true"></div>
-  <header class="masthead">
-    <button id="resetButton" class="wordmark" aria-label="Begin a new reading">
-      <span class="wordmark-mark">✦</span>
-      <span>CITADEL <em>SEAFOAM</em></span>
-    </button>
-    <div class="ledger" aria-live="polite">
-      <span><small>COMPOUNDS</small><b id="discoveryCount">0</b><i>/ 30</i></span>
-      <span><small>CYCLE</small><b id="cycleCount">I</b></span>
-    </div>
+  <canvas id="sky" aria-hidden="true"></canvas>
+  <div class="grain" aria-hidden="true"></div>
+  <header>
+    <button id="resetButton" class="brand" aria-label="Reset the reading"><i>✦</i>CITADEL SEAFOAM</button>
+    <div class="counts"><span id="discoveryCount">0</span><i>/ 30</i><span id="cycleCount">I</span></div>
   </header>
-
-  <main class="reading-shell">
-    <section class="altar-panel" aria-live="polite">
-      <div class="kicker">THE CONFLUENCE</div>
-      <div id="altar" class="altar">
-        <div class="altar-rings" aria-hidden="true"></div>
-        <div id="altarCards" class="altar-cards"></div>
-        <div id="altarMessage" class="altar-message"></div>
-      </div>
+  <main>
+    <section id="stage" class="stage" aria-live="polite">
+      <div class="stage-rings" aria-hidden="true"></div>
+      <div id="stageCards" class="stage-cards"></div>
+      <h1 id="compoundName">TAKE TWO</h1>
     </section>
-
-    <section class="table-panel" aria-label="Card table">
-      <div class="table-label"><span>THE SIX RELICS</span><small>Choose the first card, then the second.</small></div>
-      <div class="card-table">
-        <div class="pile-column">
-          <div id="deckPile" class="pile deck-pile" aria-label="Deck"></div>
-          <p><b>DECK</b><span id="deckCount">6</span></p>
-        </div>
-
-        <div id="hand" class="hand" role="list" aria-label="Cards in hand"></div>
-
-        <div class="pile-column">
-          <div id="discardPile" class="pile discard-pile" aria-label="Discard pile"></div>
-          <p><b>DISCARD</b><span id="discardCount">0</span></p>
-        </div>
-      </div>
-      <div class="actions">
-        <button id="clearButton" class="text-button" disabled>Clear selection</button>
-        <button id="combineButton" class="combine-button" disabled><span>Combine</span><i>↗</i></button>
-      </div>
-      <p class="instruction"><span>01</span> The first relic leads. <span>02</span> The second transforms it. <span>⌘</span> Each ordered pair becomes a different compound.</p>
+    <section class="table" aria-label="The six relics">
+      <div class="pile-wrap"><div id="deckPile" class="pile deck" aria-label="Deck"></div><span id="deckCount">2</span></div>
+      <div id="hand" class="hand" role="list" aria-label="Cards in hand"></div>
+      <div class="pile-wrap"><div id="discardPile" class="pile discard empty" aria-label="Discard pile"></div><span id="discardCount">0</span></div>
     </section>
+    <nav class="controls" aria-label="Ritual controls"><button id="clearButton" aria-label="Clear selection" disabled>⌫</button><button id="combineButton" aria-label="Combine selected cards" disabled>↗</button></nav>
+    <p class="keys"><b>1–4</b> SELECT &nbsp; <b>SPACE</b> COMBINE &nbsp; <b>ESC</b> CLEAR</p>
   </main>
-
-  <div id="toast" class="toast" aria-live="polite"></div>
-  <script src="citadel.js?v=20260726-cycle"></script>
+  <script src="citadel.js?v=20260726-ritual"></script>
 </body>
 </html>
