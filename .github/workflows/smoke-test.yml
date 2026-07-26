@@ -23,7 +23,9 @@ jobs:
           node-version: 22
 
       - name: Check JavaScript syntax
-        run: node --check game.js
+        run: |
+          node --check game.js
+          node --check ritual-pass.js
 
       - name: Install browser
         run: |
@@ -53,11 +55,27 @@ jobs:
             await page.locator('#beginButton').click();
             await page.waitForFunction(() => document.querySelector('#gameScreen')?.classList.contains('active'));
 
-            const handCount = await page.locator('#hand .tarot-card').count();
+            const hand = page.locator('#hand .tarot-card');
+            const handCount = await hand.count();
             if (handCount !== 5) throw new Error(`Expected 5 cards after entry, found ${handCount}`);
 
-            await page.locator('#hand .tarot-card').nth(0).click();
-            await page.locator('#hand .tarot-card').nth(1).click();
+            const artCount = await page.locator('#hand .tarot-card .card-art').count();
+            if (artCount !== handCount) throw new Error(`Expected ${handCount} full-art card faces, found ${artCount}`);
+
+            const first = hand.nth(0);
+            const second = hand.nth(1);
+            await first.click();
+            if (!await first.evaluate(element => element.classList.contains('selected-first'))) {
+              throw new Error('First selected card did not receive the red-order class');
+            }
+
+            await second.click();
+            if (!await first.evaluate(element => element.classList.contains('selected-first'))) {
+              throw new Error('First selected card lost the red-order class');
+            }
+            if (!await second.evaluate(element => element.classList.contains('selected-second'))) {
+              throw new Error('Second selected card did not receive the blue-order class');
+            }
             if (await page.locator('#invokeButton').isDisabled()) throw new Error('Invoke remained disabled after selecting two cards');
 
             await page.locator('#invokeButton').click();
