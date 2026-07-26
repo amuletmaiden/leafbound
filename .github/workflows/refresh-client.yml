@@ -1,0 +1,61 @@
+name: Refresh cached LEAFBOUND clients
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/refresh-client.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Version assets and retire legacy caches
+        shell: bash
+        run: |
+          python3 <<'PY'
+          from pathlib import Path
+          import re
+
+          path = Path('index.html')
+          html = path.read_text()
+          version = '20260726-entrance-fix-1'
+
+          html = re.sub(r'href="styles\.css(?:\?[^\"]*)?"', f'href="styles.css?v={version}"', html)
+          html = re.sub(r'src="game\.js(?:\?[^\"]*)?"', f'src="game.js?v={version}"', html)
+
+          if 'data-leafbound-cache-retirement' not in html:
+              retirement = '''  <script data-leafbound-cache-retirement>
+    // Retire caches and workers left by earlier LEAFBOUND prototypes.
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(registrations => {
+        registrations.forEach(registration => registration.unregister());
+      });
+    }
+    if ('caches' in window) {
+      caches.keys().then(keys => Promise.all(keys.map(key => caches.delete(key))));
+    }
+  </script>\n'''
+              html = html.replace('  <script src="game.js', retirement + '  <script src="game.js', 1)
+
+          if 'http-equiv="Cache-Control"' not in html:
+              html = html.replace(
+                  '  <meta charset="utf-8" />',
+                  '  <meta charset="utf-8" />\n  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />\n  <meta http-equiv="Pragma" content="no-cache" />\n  <meta http-equiv="Expires" content="0" />',
+                  1,
+              )
+
+          path.write_text(html)
+          PY
+
+          rm -f .github/workflows/refresh-client.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html .github/workflows/refresh-client.yml
+          git commit -m 'Bust stale client caches for the garden entrance'
+          git push
