@@ -13,36 +13,29 @@
     p: { name: 'Moth Princess', title: 'THE BEAUTIFUL CHANGE', hair: '#ff71e8', hair2: '#9c168e', eye: '#4d083f', accent: COLORS.p, style: 'wing' },
     b: { name: 'Swan', title: 'THE STILL LAW', hair: '#73ddff', hair2: '#12679b', eye: '#062e4c', accent: COLORS.b, style: 'veil' }
   };
-  const ZONES = {
-    hands: { glyph: '✋', name: 'Hands', copy: 'Immediate agency. Same-zone rites become decisive.' },
-    eyes: { glyph: '◉', name: 'Eyes', copy: 'Sight and revelation. The target field becomes easier to read.' },
-    lips: { glyph: '⌒', name: 'Lips', copy: 'Invocation. Repeated pair-laws gather force.' },
-    pockets: { glyph: '▱', name: 'Pockets', copy: 'Delay and storage. Surplus can be kept rather than destroyed.' }
-  };
-
   const CARD_LIBRARY = {
-    sun:      { glyph: '☉', name: 'Sun', color: 'r', pips: 2, zone: 'hands', vector: {r:7,g:1,p:0,b:2}, copy: 'Declares the acting self and produces motion.' },
-    eye:      { glyph: '◉', name: 'Green Eye', color: 'g', pips: 2, zone: 'eyes', vector: {r:0,g:7,p:1,b:2}, copy: 'Sees connection, living deficits, and concealed desire.' },
-    mirror:   { glyph: '◇', name: 'Mirror', color: 'b', pips: 2, zone: 'eyes', vector: {r:1,g:1,p:1,b:7}, copy: 'Makes structure visible and lets a condition compare itself.' },
-    flame:    { glyph: '♨', name: 'Flame', color: 'r', pips: 3, zone: 'lips', vector: {r:8,g:0,p:2,b:0}, copy: 'A spoken motion. Strong, bright, and difficult to retract.' },
-    garden:   { glyph: '❈', name: 'Garden', color: 'g', pips: 3, zone: 'hands', vector: {r:1,g:8,p:1,b:0}, copy: 'Fills absence with a living relation.' },
-    swan:     { glyph: '♧', name: 'Swan', color: 'b', pips: 3, zone: 'pockets', vector: {r:0,g:2,p:0,b:8}, copy: 'Carries law inside softness and stores stillness.' },
-    moth:     { glyph: 'ϟ', name: 'Moth', color: 'p', pips: 2, zone: 'lips', vector: {r:1,g:2,p:7,b:0}, copy: 'Turns what is already happening into another kind of happening.' },
-    ruby:     { glyph: '◆', name: 'Ruby', color: 'r', pips: 1, zone: 'pockets', vector: {r:6,g:0,p:2,b:2}, copy: 'A portable self. It can be kept, lost, or incarnated.' },
-    birds:    { glyph: '⋀⋁', name: 'Birds', color: 'g', split: 'p', pips: 2, zone: 'lips', vector: {r:0,g:5,p:4,b:1}, copy: 'Connection taking flight through transformation.' },
-    moon:     { glyph: '☾', name: 'Moon', color: 'b', split: 'p', pips: 2, zone: 'eyes', vector: {r:0,g:1,p:4,b:5}, copy: 'Law seen indirectly: a mirror that changes what it reflects.' },
-    tower:    { glyph: '⌂', name: 'Tower', color: 'b', split: 'r', pips: 3, zone: 'hands', vector: {r:3,g:0,p:0,b:7}, copy: 'Motion made architectural. A force that remembers its boundary.' },
-    butterfly:{ glyph: '⋈', name: 'Butterfly', color: 'p', split: 'g', pips: 3, zone: 'hands', vector: {r:0,g:4,p:6,b:0}, copy: 'A completed metamorphosis that can seed another.' },
-    lips:     { glyph: '⌒', name: 'Lips', color: 'p', split: 'r', pips: 1, zone: 'lips', vector: {r:3,g:0,p:5,b:2}, copy: 'The transformation caused by saying a thing aloud.' },
-    pocket:   { glyph: '▱', name: 'Pocket', color: 'b', split: 'g', pips: 1, zone: 'pockets', vector: {r:0,g:3,p:1,b:6}, copy: 'A hidden place where an unfinished operation may persist.' },
-    nova:     { glyph: '✺', name: 'Nova', color: 'r', split: 'p', pips: 3, zone: 'eyes', vector: {r:5,g:0,p:5,b:0}, copy: 'A self transformed so quickly that it becomes an event.' },
-    meridian: { glyph: '⊕', name: 'Meridian', color: 'g', split: 'b', pips: 2, zone: 'pockets', vector: {r:0,g:5,p:0,b:5}, copy: 'A two-sided path: green on one face, blue on the other.' },
-    seed:     { glyph: '•', name: 'Seed', color: 'g', pips: 1, zone: 'pockets', vector: {r:1,g:6,p:2,b:1}, copy: 'Small magnitude, enormous futurity.' },
-    eclipse:  { glyph: '◑', name: 'Eclipse', color: 'p', split: 'b', pips: 3, zone: 'eyes', vector: {r:1,g:0,p:5,b:4}, copy: 'A transformation whose law is temporarily hidden.' }
+    sun:      { glyph: '☉', name: 'Sun', color: 'r', pips: 2, vector: {r:7,g:1,p:0,b:2}, copy: 'A radiance that moves first.' },
+    eye:      { glyph: '◉', name: 'Green Eye', color: 'g', pips: 2, vector: {r:0,g:7,p:1,b:2}, copy: 'The living witness.' },
+    mirror:   { glyph: '◇', name: 'Mirror', color: 'b', pips: 2, vector: {r:1,g:1,p:1,b:7}, copy: 'The world looking back.' },
+    flame:    { glyph: '♨', name: 'Flame', color: 'r', pips: 3, vector: {r:8,g:0,p:2,b:0}, copy: 'A vow made hot.' },
+    garden:   { glyph: '❈', name: 'Garden', color: 'g', pips: 3, vector: {r:1,g:8,p:1,b:0}, copy: 'A place that answers.' },
+    swan:     { glyph: '♧', name: 'Swan', color: 'b', pips: 3, vector: {r:0,g:2,p:0,b:8}, copy: 'Still water bearing a girl.' },
+    moth:     { glyph: 'ϟ', name: 'Moth', color: 'p', pips: 2, vector: {r:1,g:2,p:7,b:0}, copy: 'The beautiful undoing.' },
+    ruby:     { glyph: '◆', name: 'Ruby Reliquary', color: 'r', pips: 1, vector: {r:6,g:0,p:2,b:2}, copy: 'A red heart kept in gold.' },
+    birds:    { glyph: '⋀⋁', name: 'Birds', color: 'g', split: 'p', pips: 2, vector: {r:0,g:5,p:4,b:1}, copy: 'A bright flock of changes.' },
+    moon:     { glyph: '☾', name: 'Moon Pool', color: 'b', split: 'p', pips: 2, vector: {r:0,g:1,p:4,b:5}, copy: 'A reflection with a pulse.' },
+    tower:    { glyph: '⌂', name: 'Blue Tower', color: 'b', split: 'r', pips: 3, vector: {r:3,g:0,p:0,b:7}, copy: 'A stair into distance.' },
+    butterfly:{ glyph: '⋈', name: 'Butterfly Saint', color: 'p', split: 'g', pips: 3, vector: {r:0,g:4,p:6,b:0}, copy: 'A winged benediction.' },
+    vow:      { glyph: '⌒', name: 'Rose Vow', color: 'p', split: 'r', pips: 1, vector: {r:3,g:0,p:5,b:2}, copy: 'A promise that blossoms.' },
+    chamber:  { glyph: '▱', name: 'Secret Chamber', color: 'b', split: 'g', pips: 1, vector: {r:0,g:3,p:1,b:6}, copy: 'A room behind the veil.' },
+    nova:     { glyph: '✺', name: 'Nova', color: 'r', split: 'p', pips: 3, vector: {r:5,g:0,p:5,b:0}, copy: 'A small private apocalypse.' },
+    meridian: { glyph: '⊕', name: 'Meridian', color: 'g', split: 'b', pips: 2, vector: {r:0,g:5,p:0,b:5}, copy: 'A path between waters.' },
+    seed:     { glyph: '•', name: 'Seed', color: 'g', pips: 1, vector: {r:1,g:6,p:2,b:1}, copy: 'A future held gently.' },
+    eclipse:  { glyph: '◑', name: 'Eclipse', color: 'p', split: 'b', pips: 3, vector: {r:1,g:0,p:5,b:4}, copy: 'A dark halo of becoming.' }
   };
 
   const STARTER = ['sun','eye','mirror','flame','garden','swan','moth']; // RGBRGBP
-  const REWARDS = ['ruby','birds','moon','tower','butterfly','lips','pocket','nova','meridian','seed','eclipse'];
+  const REWARDS = ['ruby','birds','moon','tower','butterfly','vow','chamber','nova','meridian','seed','eclipse'];
 
   const PAIRS = {
     rr:{ name:'RUBY ASCENDANT', girl:'The Ruby Queen', copy:'The self asserts the exact amount of motion it requires.' },
@@ -67,9 +60,9 @@
     {id:'orchard',glyph:'☉',name:'Solar Orchard',copy:'Red and green rites carry farther.', apply(ctx){ if ('rg'.includes(ctx.a) || 'rg'.includes(ctx.b)) ctx.mag *= 1.18; }},
     {id:'moonpool',glyph:'☾',name:'Moon Pool',copy:'The second symbol speaks more loudly.', apply(ctx){ ctx.mag += spec(ctx.second).pips * .65; }},
     {id:'mothweather',glyph:'ϟ',name:'Moth Weather',copy:'Karma leaves a pink residue.', apply(ctx){ ctx.residue.p += (ctx.first.karma + ctx.second.karma) * .8; }},
-    {id:'swanstair',glyph:'♧',name:'Swan Stair',copy:'Matching places arrest the next drift.', apply(ctx){ if(spec(ctx.first).zone === spec(ctx.second).zone) ctx.freeze = true; }},
+    {id:'swanstair',glyph:'♧',name:'Swan Stair',copy:'Blue law holds the next drift.', apply(ctx){ if(ctx.a==='b' || ctx.b==='b') ctx.freeze = true; }},
     {id:'birdchoir',glyph:'⋀⋁',name:'Bird Choir',copy:'A repeated pair-law gathers a chorus.', apply(ctx){ ctx.mag += Math.min(4, (state.pairHistory[ctx.key] || 0) * 1.2); }},
-    {id:'pocketeclipse',glyph:'◑',name:'Pocket Eclipse',copy:'What was kept returns with doubled gravity.', apply(ctx){ ctx.pocketMultiplier = 2; }},
+    {id:'veiledeclipse',glyph:'◑',name:'Veiled Eclipse',copy:'A waiting change returns with doubled gravity.', apply(ctx){ ctx.echoMultiplier = 2; }},
     {id:'glassgarden',glyph:'◇',name:'Glass Garden',copy:'The emptiest color receives a small mercy.', after(){ nudgeLowestDeficit(2.5); }},
     {id:'silenttower',glyph:'⌂',name:'Silent Tower',copy:'Blue operations hold their shape.', apply(ctx){ if(ctx.a==='b') ctx.freeze = true; }}
   ];
@@ -84,7 +77,7 @@
   const ledger = loadLedger();
   const state = {
     screen:'title', encounter:0, turn:1, current:null, target:null, omens:[], activeOmen:0,
-    deck:[], draw:[], discard:[], hand:[], selected:[], pocket:[], stable:0, pairHistory:{},
+    deck:[], draw:[], discard:[], hand:[], selected:[], echoes:[], stable:0, pairHistory:{},
     resolved:0, sound:false, gloss:false, animating:false, runKarma:0, lastRite:null, freezeNext:false,
     delayed:[], discoveries:new Set(ledger.discoveries || [])
   };
@@ -149,7 +142,7 @@
       case 'pp': invertLargestError(mag); invertLargestError(mag*.6); break;
       case 'pb': {
         const from=mostSurplus(); const to=mostDeficit(); const kept=Math.min(mag*.7,Math.max(0,state.current[from]-state.target[from]));
-        if(kept>0){ state.current[from]-=kept; state.pocket.push({from,to,amount:kept,label:'sealed wing'}); state.current=normalize(state.current); ctx.result='A surplus has been folded into the pocket.'; }
+        if(kept>0){ state.current[from]-=kept; state.echoes.push({from,to,amount:kept,label:'sealed wing'}); state.current=normalize(state.current); ctx.result='A sealed wing waits beneath the rite.'; }
         else moveToward('p',mag);
         break;
       }
@@ -185,14 +178,14 @@
   }
 
   function startRun(){
-    state.encounter=0; state.turn=1; state.resolved=0; state.runKarma=0; state.pairHistory={}; state.pocket=[]; state.delayed=[]; state.selected=[];
+    state.encounter=0; state.turn=1; state.resolved=0; state.runKarma=0; state.pairHistory={}; state.echoes=[]; state.delayed=[]; state.selected=[];
     state.deck=STARTER.map(makeCard); state.draw=[]; state.discard=[]; state.hand=[];
     showScreen('game'); startEncounter();
   }
   function startEncounter(){
     const encounter=ENCOUNTERS[state.encounter];
     state.turn=1; state.stable=0; state.current=cloneVec(encounter.current); state.target=cloneVec(encounter.target); state.activeOmen=0;
-    state.omens=sample(OMENS,3); state.selected=[]; state.pocket=[]; state.delayed=[]; state.freezeNext=false;
+    state.omens=sample(OMENS,3); state.selected=[]; state.echoes=[]; state.delayed=[]; state.freezeNext=false;
     state.draw=weightedShuffle([...state.deck]); state.discard=[]; state.hand=[]; drawTo(5);
     renderAll();
   }
@@ -229,13 +222,10 @@
     const a=dominant(spec(first).vector), b=dominant(spec(second).vector), key=a+b;
     const pair=PAIRS[key];
     const omen=state.omens[state.activeOmen];
-    const ctx={ first,second,a,b,key,mag:3+spec(first).pips+spec(second).pips+(first.karma>=3?1.5:0)+(second.karma>=3?1.5:0),residue:{r:0,g:0,p:0,b:0},freeze:false,pocketMultiplier:1,result:'' };
+    const ctx={ first,second,a,b,key,mag:3+spec(first).pips+spec(second).pips+(first.karma>=3?1.5:0)+(second.karma>=3?1.5:0),residue:{r:0,g:0,p:0,b:0},freeze:false,echoMultiplier:1,result:'' };
     omen.apply?.(ctx);
-    if(spec(first).zone===spec(second).zone) ctx.mag+=1;
-    if(spec(first).zone==='eyes') ctx.mag+=.4;
-    if(spec(first).zone==='lips') ctx.mag+=(state.pairHistory[key]||0)*.35;
     pairOperation(ctx);
-    releasePocket(ctx);
+    releaseEcho(ctx);
     state.pairHistory[key]=(state.pairHistory[key]||0)+1;
     state.discoveries.add(key); saveLedger();
     first.karma++; second.karma++; state.runKarma+=2;
@@ -263,13 +253,13 @@
     if(state.turn>ENCOUNTERS[state.encounter].turns){ state.animating=false; endRun(false); return; }
     drawTo(5); renderAll(); state.animating=false;
   }
-  function releasePocket(ctx){
-    if(!state.pocket.length) return;
-    const item=state.pocket.shift(); const amount=item.amount*(ctx.pocketMultiplier||1);
+  function releaseEcho(ctx){
+    if(!state.echoes.length) return;
+    const item=state.echoes.shift(); const amount=item.amount*(ctx.echoMultiplier||1);
     const need=state.target[item.to]-state.current[item.to];
     if(need>0) state.current[item.to]+=Math.min(need,amount); else state.current[item.from]+=amount*.35;
     state.current=normalize(state.current);
-    ctx.result = ctx.result || `The pocket released ${item.label}.`;
+    ctx.result = ctx.result || `The ${item.label} returned.`;
   }
   function applyDelayed(){
     if(!state.delayed.length) return;
@@ -315,7 +305,7 @@
     const e=ENCOUNTERS[state.encounter];
     $('#encounterIndex').textContent=roman(state.encounter+1); $('#conditionName').textContent=e.name; $('#conditionEpithet').textContent=e.epithet;
     $('#conditionPortrait').innerHTML=portraitSVG({...e,accent:e.palette[0]},{full:true,halo:true});
-    renderAuras(); renderProgress(); renderOmens(); renderHand(); renderSyntax(); renderRoster(); renderPocket(); updateHeader();
+    renderAuras(); renderProgress(); renderOmens(); renderHand(); renderSyntax(); renderRoster(); updateHeader();
     $('#deckCount').textContent=state.draw.length; $('#discardCount').textContent=state.discard.length;
   }
   function renderAuras(){
@@ -340,8 +330,8 @@
   }
   function cardHTML(card,reward=false,selected=false){
     const c=spec(card), split=c.split?`<div class="card-split" style="--split-color:${COLORS[c.split]}"></div>`:'';
-    return `<button class="tarot-card ${selected?'selected':''} ${card.karma>=3?'awakened':''}" style="--card-color:${COLORS[c.color]}" data-uid="${card.uid}" title="${c.name}: ${c.copy}">
-      ${split}<div class="card-inner"><div class="card-pips">${'<i></i>'.repeat(c.pips)}</div><div class="card-glyph">${c.glyph}</div><div class="card-gloss">${c.name}</div><div class="card-zone">${ZONES[c.zone].glyph}</div><div class="card-karma">${card.karma?`⌁${card.karma}`:''}</div></div></button>`;
+    return `<button class="tarot-card ${selected?'selected':''} ${card.karma>=3?'awakened':''}" style="--card-color:${COLORS[c.color]}" data-card="${card.id}" data-uid="${card.uid}" aria-label="${c.name}">
+      ${split}<div class="card-inner"><div class="card-art-face" aria-hidden="true"></div><div class="card-pips">${'<i></i>'.repeat(c.pips)}</div><div class="card-gloss">${c.name}</div><div class="card-karma">${card.karma?`⌁${card.karma}`:''}</div></div></button>`;
   }
   function renderSyntax(){
     const cards=state.selected.map(uid=>state.hand.find(c=>c.uid===uid));
@@ -353,14 +343,11 @@
   }
   function fillSlot(el,card){
     if(!card){ el.className='syntax-slot'; el.innerHTML=`<span>${el.id==='actorSlot'?'Ⅰ':'Ⅱ'}</span>`; return; }
-    const c=spec(card); el.className='syntax-slot filled'; el.style.setProperty('--slot-color',COLORS[c.color]); el.innerHTML=`<span class="mini-symbol">${c.glyph}</span>`;
+    const c=spec(card); el.className='syntax-slot filled'; el.style.setProperty('--slot-color',COLORS[c.color]); el.innerHTML=`<span class="mini-art" data-card="${card.id}" aria-label="${c.name}"></span>`;
   }
   function renderRoster(){
     const active=state.selected.length?dominant(spec(state.hand.find(c=>c.uid===state.selected[0])).vector):null;
     $('#goddessRoster').innerHTML=Object.entries(GODDESSES).map(([k,g])=>`<div class="goddess-chip ${active===k?'active':''}" style="--goddess-color:${g.accent}">${portraitSVG(g,{bust:true})}<div><b>${g.name}</b><small>${g.title}</small></div></div>`).join('');
-  }
-  function renderPocket(){
-    $('#pocketTray').innerHTML=`<div class="panel-kicker">POCKETS</div>`+(state.pocket.length?state.pocket.map(p=>`<div class="pocket-token"><b>▱</b><span>${p.label}<small> ${p.amount.toFixed(1)} weight</small></span></div>`).join(''):'<p>Nothing is being kept.</p>');
   }
   function updateHeader(){ $('#resolvedCount').textContent=state.resolved; $('#karmaCount').textContent=state.runKarma; $('#discoveryCount').textContent=state.discoveries.size; }
   function animateRite(first,second,pair,ctx){
@@ -401,11 +388,11 @@
   function renderCodex(tab){
     $$('.codex-tabs button').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
     if(tab==='symbols'){
-      $('#codexContent').innerHTML=`<div class="codex-grid">${Object.entries(CARD_LIBRARY).map(([id,c])=>`<article class="codex-entry"><div class="entry-top"><span class="entry-glyph" style="color:${COLORS[c.color]}">${c.glyph}</span><div><h3>${c.name}</h3><small>${COLOR_NAMES[c.color]} · ${ZONES[c.zone].name} · ${'●'.repeat(c.pips)}</small></div></div><p>${c.copy}</p></article>`).join('')}</div>`;
+      $('#codexContent').innerHTML=`<div class="codex-grid">${Object.entries(CARD_LIBRARY).map(([id,c])=>`<article class="codex-entry"><div class="entry-top"><span class="entry-glyph" style="color:${COLORS[c.color]}">${c.glyph}</span><div><h3>${c.name}</h3><small>${COLOR_NAMES[c.color]} · ${'●'.repeat(c.pips)}</small></div></div><p>${c.copy}</p></article>`).join('')}</div>`;
     } else if(tab==='pairs'){
       $('#codexContent').innerHTML=`<div class="pair-matrix">${Object.entries(PAIRS).map(([key,p])=>`<article class="pair-cell ${state.discoveries.has(key)?'':'locked'}" style="--a:${COLORS[key[0]]};--b:${COLORS[key[1]]}"><span style="color:${COLORS[key[0]]}">${COLOR_NAMES[key[0]][0]}</span> → <span style="color:${COLORS[key[1]]}">${COLOR_NAMES[key[1]][0]}</span><b>${state.discoveries.has(key)?p.girl:'UNDISCOVERED'}</b><small>${state.discoveries.has(key)?p.copy:'Invoke this ordered pair to witness her.'}</small></article>`).join('')}</div>`;
     } else {
-      $('#codexContent').innerHTML=`<div class="law-copy"><section><h3>Two-card syntax</h3><p>Every turn accepts exactly two symbols. The first identifies the goddess who acts. The second identifies her object, medium, instrument, or world. Reversing them creates a different manifestation.</p></section><section><h3>Color is physical</h3><p>Every symbol and condition contains red, green, pink, and blue weight. The board shows these quantities as a continuous aura rather than as damage numbers. A successful rite makes the present field resemble the girl’s desired field.</p></section><section><h3>Karmic gravity</h3><p>Played cards gain karmic weight. Heavy symbols return to the hand more readily and awaken at three weight. At five, fate may return them immediately instead of allowing them to disappear into the discard.</p></section><section><h3>Hands, Eyes, Lips, Pockets</h3><p>Hands act. Eyes reveal. Lips make precedent. Pockets preserve unfinished change. A pair sharing a place gains extra magnitude; some locations create more specific consequences.</p></section><section><h3>No enemies</h3><p>A condition is a girl trapped in an impossible arrangement of color. Failure does not kill her, and success does not defeat her. The reading either discovers a livable continuation or closes before one appears.</p></section><section><h3>Harmony</h3><p>Cross the pale threshold and remain there for the required number of rites. The condition drifts after each invocation, so momentary similarity is not enough; the new relation must hold.</p></section></div>`;
+      $('#codexContent').innerHTML=`<div class="law-copy"><section><h3>Two</h3><p>The first card opens a presence. The second gives it a world. Reverse them and another girl answers.</p></section><section><h3>Color</h3><p>Red moves. Green gathers. Pink changes. Blue holds.</p></section><section><h3>Memory</h3><p>Often-used cards grow heavier, brighter, and more willing to return.</p></section></div>`;
     }
   }
 

@@ -59,7 +59,7 @@ jobs:
             const handCount = await hand.count();
             if (handCount !== 5) throw new Error(`Expected 5 cards after entry, found ${handCount}`);
 
-            const artCount = await page.locator('#hand .tarot-card .card-art').count();
+            const artCount = await page.locator('#hand .tarot-card .card-art-face').count();
             if (artCount !== handCount) throw new Error(`Expected ${handCount} full-art card faces, found ${artCount}`);
 
             const first = hand.nth(0);

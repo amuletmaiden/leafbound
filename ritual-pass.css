@@ -1,256 +1,47 @@
-/* LEAFBOUND ritual veil — a non-destructive art and legibility pass. */
+/* The deck is a set of paintings, not a symbol font. */
+.omen small,.goddess-chip small{display:none}
+body.gloss .omen small,body.gloss .goddess-chip small{display:block}
+.rite-result{display:none!important}
+.title-screen .tiny{display:none}
 
-/* The table should read as a rite, not a dashboard. */
-.omen small,
-.goddess-chip small{
-  display:none;
-}
-body.gloss .omen small,
-body.gloss .goddess-chip small{
-  display:block;
-}
-.rite-result{
-  display:none !important;
-}
-.hand-header small{
-  color:rgba(255,255,255,.42);
-  font-family:Georgia,serif;
-  font-size:13px;
-  letter-spacing:.65em;
-}
-.pocket-tray p{
-  font-size:0;
-}
-.pocket-tray p::after{
-  content:"—";
-  font:18px Georgia,serif;
-  color:rgba(255,255,255,.28);
-}
-
-/* Tarot, not software widgets. */
 .tarot-card{
-  --card-color:#fff;
-  position:relative;
-  width:132px;
-  height:206px;
-  flex:0 1 132px;
-  overflow:visible;
-  border:0;
-  border-radius:0;
+  --art-x:0%;--art-y:0%;
+  width:132px;height:206px;flex-basis:132px;overflow:visible;border:0;border-radius:0;
   clip-path:polygon(0 14px,14px 0,calc(100% - 14px) 0,100% 14px,100% calc(100% - 14px),calc(100% - 14px) 100%,14px 100%,0 calc(100% - 14px));
-  background:
-    radial-gradient(circle at 50% 30%,color-mix(in srgb,var(--card-color) 32%,transparent),transparent 38%),
-    linear-gradient(160deg,color-mix(in srgb,var(--card-color) 26%,#11111d),#090910 54%,color-mix(in srgb,var(--card-color) 12%,#050508));
-  box-shadow:
-    0 18px 32px rgba(0,0,0,.52),
-    inset 0 0 42px rgba(0,0,0,.42),
-    inset 0 0 0 1px color-mix(in srgb,var(--card-color) 50%,rgba(255,255,255,.2));
-  transition:transform .24s cubic-bezier(.2,.8,.2,1),filter .24s,box-shadow .24s;
+  background:#0a0910;
+  box-shadow:0 18px 32px rgba(0,0,0,.58),inset 0 0 0 1px rgba(255,229,155,.38);
+  isolation:isolate;
 }
-.tarot-card::before{
-  content:"";
-  position:absolute;
-  inset:6px;
-  z-index:3;
-  pointer-events:none;
-  border:1px solid color-mix(in srgb,var(--card-color) 56%,rgba(255,255,255,.28));
-  border-radius:0;
-  clip-path:polygon(0 9px,9px 0,calc(100% - 9px) 0,100% 9px,100% calc(100% - 9px),calc(100% - 9px) 100%,9px 100%,0 calc(100% - 9px));
-  box-shadow:inset 0 0 0 2px rgba(0,0,0,.35);
-}
-.tarot-card:hover{
-  transform:translateY(-10px);
-  filter:brightness(1.08);
-  box-shadow:0 26px 45px rgba(0,0,0,.62),0 0 34px color-mix(in srgb,var(--card-color) 18%,transparent);
-}
-.tarot-card.selected{
-  transform:translateY(-20px);
-  box-shadow:0 28px 48px rgba(0,0,0,.65);
-}
-.tarot-card.selected-first{
-  outline:3px solid var(--red);
-  outline-offset:4px;
-  box-shadow:0 28px 48px rgba(0,0,0,.65),0 0 32px color-mix(in srgb,var(--red) 58%,transparent);
-}
-.tarot-card.selected-second{
-  outline:3px solid var(--blue);
-  outline-offset:4px;
-  box-shadow:0 28px 48px rgba(0,0,0,.65),0 0 32px color-mix(in srgb,var(--blue) 58%,transparent);
-}
-.tarot-card.selected-first::before{
-  border-color:var(--red);
-  box-shadow:inset 0 0 0 2px var(--red),0 0 14px var(--red);
-}
-.tarot-card.selected-second::before{
-  border-color:var(--blue);
-  box-shadow:inset 0 0 0 2px var(--blue),0 0 14px var(--blue);
-}
-.tarot-card.selected-first .card-inner::after,
-.tarot-card.selected-second .card-inner::after{
-  position:absolute;
-  top:10px;
-  right:10px;
-  z-index:7;
-  width:22px;
-  height:22px;
-  display:grid;
-  place-items:center;
-  border:1px solid currentColor;
-  border-radius:50%;
-  background:#07070d;
-  font:14px Georgia,serif;
-  box-shadow:0 0 18px currentColor;
-}
-.tarot-card.selected-first .card-inner::after{
-  content:"Ⅰ";
-  color:var(--red);
-}
-.tarot-card.selected-second .card-inner::after{
-  content:"Ⅱ";
-  color:var(--blue);
-}
-.tarot-card.awakened::after{
-  content:"";
-  position:absolute;
-  inset:2px;
-  z-index:2;
-  pointer-events:none;
-  border:1px solid color-mix(in srgb,var(--card-color) 70%,white);
-  background:none;
-  animation:leafbound-awaken 2.8s ease-in-out infinite;
-}
-@keyframes leafbound-awaken{
-  50%{opacity:.28;filter:drop-shadow(0 0 10px var(--card-color));}
-}
-.card-inner{
-  position:relative;
-  z-index:1;
-  width:100%;
-  height:100%;
-  overflow:hidden;
-  display:block;
-}
-.card-inner::before{
-  content:"";
-  position:absolute;
-  inset:11px;
-  z-index:2;
-  pointer-events:none;
-  background:
-    linear-gradient(var(--card-color),var(--card-color)) 0 0/13px 1px no-repeat,
-    linear-gradient(var(--card-color),var(--card-color)) 0 0/1px 13px no-repeat,
-    linear-gradient(var(--card-color),var(--card-color)) 100% 0/13px 1px no-repeat,
-    linear-gradient(var(--card-color),var(--card-color)) 100% 0/1px 13px no-repeat,
-    linear-gradient(var(--card-color),var(--card-color)) 0 100%/13px 1px no-repeat,
-    linear-gradient(var(--card-color),var(--card-color)) 0 100%/1px 13px no-repeat,
-    linear-gradient(var(--card-color),var(--card-color)) 100% 100%/13px 1px no-repeat,
-    linear-gradient(var(--card-color),var(--card-color)) 100% 100%/1px 13px no-repeat;
-  opacity:.72;
-}
-.card-art-wrap{
-  position:absolute;
-  inset:0;
-  z-index:0;
-  color:var(--card-color);
-  line-height:0;
-  filter:drop-shadow(0 0 12px color-mix(in srgb,var(--card-color) 38%,transparent));
-}
-.card-art{
-  display:block;
-  width:100%;
-  height:100%;
-}
-.card-art .ghost{opacity:.12}
-.card-art .faint{opacity:.3}
-.card-art .soft{opacity:.55}
-.card-art .bright{opacity:.92}
-.card-art .ink{fill:#06060b;stroke:#06060b}
-.card-art .skin{fill:#f5d8dd;stroke:#f5d8dd}
-.card-art .paper{fill:#f7f3ff;stroke:#f7f3ff}
-.card-art .line{fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.card-art .fine{fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:round;stroke-linejoin:round}
-.card-art .heavy{fill:none;stroke:currentColor;stroke-width:4;stroke-linecap:round;stroke-linejoin:round}
-.card-art .color{fill:currentColor;stroke:currentColor}
-.card-art .void{fill:#07070d;stroke:#07070d}
-.card-pips{
-  top:13px;
-  left:18px;
-  right:auto;
-  z-index:6;
-  gap:4px;
-}
-.card-pips i{
-  width:5px;
-  height:5px;
-  border-radius:0;
-  transform:rotate(45deg);
-  background:var(--card-color);
-  box-shadow:0 0 7px var(--card-color);
-}
-.card-zone{
-  left:50%;
-  bottom:11px;
-  z-index:6;
-  width:28px;
-  height:28px;
-  display:grid;
-  place-items:center;
-  transform:translateX(-50%);
-  border:1px solid color-mix(in srgb,var(--card-color) 60%,white);
-  border-radius:50%;
-  background:rgba(4,4,9,.78);
-  color:#fff;
-  font-size:14px;
-  text-shadow:0 0 10px var(--card-color);
-}
-.card-karma{
-  right:13px;
-  bottom:16px;
-  z-index:6;
-  display:flex;
-  gap:3px;
-  color:transparent;
-  font-size:0;
-}
-.card-karma .karma-bead{
-  width:4px;
-  height:4px;
-  border-radius:50%;
-  background:#fff;
-  box-shadow:0 0 7px var(--card-color);
-}
-.card-gloss{
-  left:9px;
-  right:9px;
-  bottom:42px;
-  z-index:8;
-  padding:7px 4px 6px;
-  border-top:1px solid color-mix(in srgb,var(--card-color) 50%,transparent);
-  border-bottom:1px solid color-mix(in srgb,var(--card-color) 26%,transparent);
-  background:rgba(4,4,9,.78);
-  font-size:10px;
-  letter-spacing:.16em;
-  text-transform:uppercase;
-}
-.card-split{
-  z-index:1;
-  opacity:.62;
-  background:linear-gradient(160deg,color-mix(in srgb,var(--split-color) 54%,transparent),transparent 72%);
-}
-.reward-choices .tarot-card{
-  width:176px;
-  height:274px;
-}
-.reward-choices .card-gloss{
-  opacity:0;
-}
-body.gloss .reward-choices .card-gloss{
-  opacity:1;
-}
+.tarot-card::before{inset:6px;z-index:6;border:1px solid rgba(255,229,155,.68);border-radius:0;clip-path:polygon(0 9px,9px 0,calc(100% - 9px) 0,100% 9px,100% calc(100% - 9px),calc(100% - 9px) 100%,9px 100%,0 calc(100% - 9px));box-shadow:inset 0 0 0 2px rgba(0,0,0,.3)}
+.tarot-card:hover{transform:translateY(-12px) rotateX(3deg) scale(1.025);filter:brightness(1.12);box-shadow:0 28px 50px rgba(0,0,0,.68),0 0 35px color-mix(in srgb,var(--card-color) 22%,transparent)}
+.tarot-card.selected{transform:translateY(-22px);box-shadow:0 28px 50px rgba(0,0,0,.7)}
+.tarot-card.selected-first{outline:3px solid var(--red);outline-offset:4px;box-shadow:0 28px 52px rgba(0,0,0,.7),0 0 34px color-mix(in srgb,var(--red) 68%,transparent)}
+.tarot-card.selected-second{outline:3px solid var(--blue);outline-offset:4px;box-shadow:0 28px 52px rgba(0,0,0,.7),0 0 34px color-mix(in srgb,var(--blue) 68%,transparent)}
+.tarot-card.selected-first::before{border-color:var(--red);box-shadow:inset 0 0 0 2px var(--red),0 0 14px var(--red)}
+.tarot-card.selected-second::before{border-color:var(--blue);box-shadow:inset 0 0 0 2px var(--blue),0 0 14px var(--blue)}
+.tarot-card.selected-first .card-inner::after,.tarot-card.selected-second .card-inner::after{position:absolute;top:10px;right:10px;z-index:8;width:22px;height:22px;display:grid;place-items:center;border:1px solid currentColor;border-radius:50%;background:#08070d;font:14px Georgia,serif;box-shadow:0 0 18px currentColor}
+.tarot-card.selected-first .card-inner::after{content:"Ⅰ";color:var(--red)}
+.tarot-card.selected-second .card-inner::after{content:"Ⅱ";color:var(--blue)}
+.tarot-card.awakened::after{content:"";position:absolute;inset:2px;z-index:5;pointer-events:none;border:1px solid rgba(255,229,155,.9);animation:leafbound-awaken 2.8s ease-in-out infinite}
+@keyframes leafbound-awaken{50%{opacity:.25;filter:drop-shadow(0 0 11px var(--card-color))}}
+.card-inner{overflow:hidden;isolation:isolate}
+.card-art-face{position:absolute;inset:10px;z-index:-1;background-image:linear-gradient(rgba(7,5,10,.05),rgba(7,5,10,.18)),url("assets/sacred-deck.png");background-size:auto 600%;background-position:var(--art-x) var(--art-y);filter:saturate(1.08) contrast(1.04);transition:filter .3s,transform .5s}
+.tarot-card:hover .card-art-face{filter:saturate(1.22) contrast(1.08) brightness(1.08);transform:scale(1.04)}
+.card-inner::before{content:"";position:absolute;inset:11px;z-index:5;pointer-events:none;background:linear-gradient(#ffe59b,#ffe59b) 0 0/13px 1px no-repeat,linear-gradient(#ffe59b,#ffe59b) 0 0/1px 13px no-repeat,linear-gradient(#ffe59b,#ffe59b) 100% 0/13px 1px no-repeat,linear-gradient(#ffe59b,#ffe59b) 100% 0/1px 13px no-repeat,linear-gradient(#ffe59b,#ffe59b) 0 100%/13px 1px no-repeat,linear-gradient(#ffe59b,#ffe59b) 0 100%/1px 13px no-repeat,linear-gradient(#ffe59b,#ffe59b) 100% 100%/13px 1px no-repeat,linear-gradient(#ffe59b,#ffe59b) 100% 100%/1px 13px no-repeat;opacity:.78}
+.card-pips{z-index:7;top:13px;left:17px;right:auto;gap:4px}
+.card-pips i{width:5px;height:5px;border-radius:0;transform:rotate(45deg);background:#ffe59b;box-shadow:0 0 7px #ffe59b}
+.card-karma{z-index:7;right:13px;bottom:14px;color:#ffe59b;text-shadow:0 0 10px #000;font-size:11px}
+.card-gloss{z-index:7;left:9px;right:9px;bottom:12px;padding:5px 3px;background:linear-gradient(90deg,transparent,rgba(4,3,8,.92) 18%,rgba(4,3,8,.92) 82%,transparent);font-size:9px;letter-spacing:.16em;text-transform:uppercase}
+.card-split{z-index:2;opacity:.15}
+.reward-choices .tarot-card{width:176px;height:274px}.reward-choices .card-gloss{opacity:0}.reward-choices .card-art-face{inset:12px}body.gloss .reward-choices .card-gloss{opacity:1}
 
-@media(max-width:1180px){
-  .tarot-card{width:114px;height:184px;flex-basis:114px}
-}
-@media(max-width:820px){
-  .tarot-card{min-width:116px;width:116px;height:186px}
-}
+.mini-art{width:68px;height:104px;display:block;background-image:url("assets/sacred-deck.png");background-size:auto 600%;background-position:var(--art-x) var(--art-y);border:1px solid rgba(255,229,155,.65);box-shadow:0 0 18px var(--slot-color)}
+[data-card="sun"]{--art-x:0%;--art-y:0%}[data-card="eye"]{--art-x:50%;--art-y:0%}[data-card="mirror"]{--art-x:100%;--art-y:0%}
+[data-card="flame"]{--art-x:0%;--art-y:20%}[data-card="garden"]{--art-x:50%;--art-y:20%}[data-card="swan"]{--art-x:100%;--art-y:20%}
+[data-card="moth"]{--art-x:0%;--art-y:40%}[data-card="ruby"]{--art-x:50%;--art-y:40%}[data-card="birds"]{--art-x:100%;--art-y:40%}
+[data-card="moon"]{--art-x:0%;--art-y:60%}[data-card="tower"]{--art-x:50%;--art-y:60%}[data-card="butterfly"]{--art-x:100%;--art-y:60%}
+[data-card="vow"]{--art-x:0%;--art-y:80%}[data-card="chamber"]{--art-x:50%;--art-y:80%}[data-card="nova"]{--art-x:100%;--art-y:80%}
+[data-card="meridian"]{--art-x:0%;--art-y:100%}[data-card="seed"]{--art-x:50%;--art-y:100%}[data-card="eclipse"]{--art-x:100%;--art-y:100%}
+
+@media(max-width:1180px){.tarot-card{width:114px;height:184px;flex-basis:114px}}
+@media(max-width:820px){.tarot-card{min-width:116px;width:116px;height:186px}}
