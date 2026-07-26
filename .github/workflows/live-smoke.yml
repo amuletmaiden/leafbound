@@ -1,0 +1,112 @@
+name: Live Pages smoke test
+
+on:
+  workflow_run:
+    workflows: ["Deploy LEAFBOUND to GitHub Pages"]
+    types: [completed]
+  issues:
+    types: [opened]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  live-smoke:
+    if: >-
+      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success') ||
+      (github.event_name == 'issues' && startsWith(github.event.issue.title, '[live-smoke]')) ||
+      github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install browser
+        run: |
+          npm install --no-save playwright@1.54.1
+          npx playwright install --with-deps chromium
+
+      - name: Exercise deployed entry and first rite
+        id: test
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -o pipefail
+          node <<'SCRIPT' 2>&1 | tee /tmp/live-smoke.log
+          const { chromium } = require('playwright');
+
+          (async () => {
+            const browser = await chromium.launch({ headless: true });
+            const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
+            const errors = [];
+            const target = `https://amuletmaiden.github.io/leafbound/?ci=${Date.now()}`;
+
+            page.on('pageerror', error => errors.push(`pageerror: ${error.stack || error.message}`));
+            page.on('console', message => {
+              if (message.type() === 'error') errors.push(`console: ${message.text()}`);
+            });
+            page.on('requestfailed', request => errors.push(`request failed: ${request.url()} — ${request.failure()?.errorText}`));
+
+            await page.goto(target, { waitUntil: 'networkidle' });
+            const title = await page.title();
+            if (title !== 'LEAFBOUND — The Living Tarot') throw new Error(`Unexpected page title: ${title}`);
+
+            await page.locator('#beginButton').click();
+            await page.waitForFunction(() => document.querySelector('#gameScreen')?.classList.contains('active'));
+
+            const handCount = await page.locator('#hand .tarot-card').count();
+            if (handCount !== 5) throw new Error(`Expected 5 cards after entry, found ${handCount}`);
+
+            await page.locator('#hand .tarot-card').nth(0).click();
+            await page.locator('#hand .tarot-card').nth(1).click();
+            if (await page.locator('#invokeButton').isDisabled()) throw new Error('Invoke remained disabled after selecting two cards');
+
+            await page.locator('#invokeButton').click();
+            await page.waitForFunction(() => document.querySelector('#turnText')?.textContent?.trim().startsWith('2 /'));
+
+            await page.locator('#codexButton').click();
+            await page.waitForFunction(() => document.querySelector('#codexModal')?.classList.contains('open'));
+            await page.locator('[data-close="codexModal"]').click();
+
+            if (errors.length) throw new Error(errors.join('\n'));
+
+            console.log(`PASS ${target}`);
+            console.log(`TITLE ${title}`);
+            console.log(`HAND ${handCount}`);
+            console.log(`TURN ${(await page.locator('#turnText').textContent()).trim()}`);
+            await browser.close();
+          })().catch(error => {
+            console.error(error.stack || error);
+            process.exit(1);
+          });
+          SCRIPT
+
+      - name: Report issue-triggered result
+        if: always() && github.event_name == 'issues'
+        uses: actions/github-script@v7
+        env:
+          TEST_OUTCOME: ${{ steps.test.outcome }}
+        with:
+          script: |
+            const fs = require('fs');
+            const log = fs.existsSync('/tmp/live-smoke.log') ? fs.readFileSync('/tmp/live-smoke.log', 'utf8') : 'No live-smoke log was produced.';
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: `Live browser smoke test: **${process.env.TEST_OUTCOME}**\n\n\`\`\`text\n${log.slice(-12000)}\n\`\`\``
+            });
+            await github.rest.issues.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              state: 'closed'
+            });
+
+      - name: Fail when browser test failed
+        if: steps.test.outcome != 'success'
+        run: exit 1
