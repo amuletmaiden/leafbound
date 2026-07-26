@@ -1,0 +1,92 @@
+name: Diagnose entry flow
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  diagnose:
+    if: startsWith(github.event.issue.title, '[diagnose-entry]')
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install browser
+        run: |
+          npm install --no-save playwright@1.54.1
+          npx playwright install --with-deps chromium
+      - name: Run diagnostic
+        id: test
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -o pipefail
+          python3 -m http.server 4173 >/tmp/server.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill $SERVER_PID || true' EXIT
+          {
+            node --check game.js
+            node <<'SCRIPT'
+          const { chromium } = require('playwright');
+          (async () => {
+            const browser = await chromium.launch({ headless: true });
+            const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
+            const events = [];
+            page.on('pageerror', e => events.push(`PAGE ERROR: ${e.stack || e.message}`));
+            page.on('console', m => events.push(`CONSOLE ${m.type().toUpperCase()}: ${m.text()}`));
+            page.on('requestfailed', r => events.push(`REQUEST FAILED: ${r.url()} — ${r.failure()?.errorText}`));
+
+            await page.goto('http://127.0.0.1:4173/', { waitUntil: 'networkidle' });
+            console.log('TITLE ACTIVE BEFORE:', await page.locator('#titleScreen').evaluate(e => e.classList.contains('active')));
+            console.log('BEGIN VISIBLE:', await page.locator('#beginButton').isVisible());
+            console.log('BEGIN ENABLED:', await page.locator('#beginButton').isEnabled());
+            await page.locator('#beginButton').click();
+            await page.waitForTimeout(500);
+            console.log('TITLE ACTIVE AFTER:', await page.locator('#titleScreen').evaluate(e => e.classList.contains('active')));
+            console.log('GAME ACTIVE AFTER:', await page.locator('#gameScreen').evaluate(e => e.classList.contains('active')));
+            console.log('HAND COUNT:', await page.locator('#hand .tarot-card').count());
+            console.log('TURN:', await page.locator('#turnText').textContent());
+            console.log('EVENTS:\n' + events.join('\n'));
+
+            if (!await page.locator('#gameScreen').evaluate(e => e.classList.contains('active'))) {
+              throw new Error('The entry click did not activate gameScreen.');
+            }
+            if (await page.locator('#hand .tarot-card').count() !== 5) {
+              throw new Error('The entry click did not produce a five-card hand.');
+            }
+            await browser.close();
+          })().catch(e => { console.error(e.stack || e); process.exit(1); });
+          SCRIPT
+          } 2>&1 | tee /tmp/diagnostic.log
+      - name: Report result
+        if: always()
+        uses: actions/github-script@v7
+        env:
+          TEST_OUTCOME: ${{ steps.test.outcome }}
+        with:
+          script: |
+            const fs = require('fs');
+            const log = fs.existsSync('/tmp/diagnostic.log') ? fs.readFileSync('/tmp/diagnostic.log', 'utf8') : 'No diagnostic log was produced.';
+            const body = `Entry diagnostic: **${process.env.TEST_OUTCOME}**\n\n\`\`\`text\n${log.slice(-12000)}\n\`\`\``;
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body
+            });
+            await github.rest.issues.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              state: 'closed'
+            });
+      - name: Fail workflow when diagnostic failed
+        if: steps.test.outcome != 'success'
+        run: exit 1
