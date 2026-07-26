@@ -7,11 +7,12 @@
   <meta http-equiv="Expires" content="0" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#080812" />
-  <meta name="description" content="LEAFBOUND — a wordless two-card tarot roguelite of color, karma, and goddesses." />
+  <meta name="description" content="LEAFBOUND — a wordless two-card living tarot of color, karma, and goddesses." />
   <title>LEAFBOUND — The Living Tarot</title>
-  <link rel="manifest" href="manifest.json?v=20260726-entrance-fix-1" />
-  <link rel="icon" href="icon.svg?v=20260726-entrance-fix-1" type="image/svg+xml" />
-  <link rel="stylesheet" href="styles.css?v=20260726-entrance-fix-1" />
+  <link rel="manifest" href="manifest.json?v=20260725-ritual-veil-1" />
+  <link rel="icon" href="icon.svg?v=20260725-ritual-veil-1" type="image/svg+xml" />
+  <link rel="stylesheet" href="styles.css?v=20260725-ritual-veil-1" />
+  <link rel="stylesheet" href="ritual-pass.css?v=20260725-ritual-veil-1" />
 </head>
 <body>
   <canvas id="sky" aria-hidden="true"></canvas>
@@ -23,14 +24,14 @@
       <span><b>LEAFBOUND</b><small>THE LIVING TAROT</small></span>
     </button>
     <div class="run-readout" aria-live="polite">
-      <span title="Resolved conditions"><i>✦</i><b id="resolvedCount">0</b></span>
-      <span title="Karmic weight"><i>⌁</i><b id="karmaCount">0</b></span>
-      <span title="Discovered manifestations"><i>♢</i><b id="discoveryCount">0</b></span>
+      <span aria-label="Resolved conditions"><i>✦</i><b id="resolvedCount">0</b></span>
+      <span aria-label="Karmic weight"><i>⌁</i><b id="karmaCount">0</b></span>
+      <span aria-label="Discovered manifestations"><i>♢</i><b id="discoveryCount">0</b></span>
     </div>
     <nav>
-      <button id="glossToggle" class="icon-button" aria-pressed="false" title="Toggle symbolic gloss">字</button>
-      <button id="codexButton" class="icon-button" title="Open the living codex">☾</button>
-      <button id="soundButton" class="icon-button" aria-pressed="false" title="Toggle sound">♪</button>
+      <button id="glossToggle" class="icon-button" aria-pressed="false" aria-label="Reveal names">字</button>
+      <button id="codexButton" class="icon-button" aria-label="Open the living codex">☾</button>
+      <button id="soundButton" class="icon-button" aria-pressed="false" aria-label="Toggle sound">♪</button>
     </nav>
   </header>
 
@@ -40,12 +41,12 @@
         <div class="orbit orbit-a"></div><div class="orbit orbit-b"></div><div class="orbit orbit-c"></div>
         <div class="heart-core"></div>
       </div>
-      <p class="eyebrow">A TWO-CARD TAROT ROGUELITE</p>
+      <p class="eyebrow">THE LIVING TAROT</p>
       <h1>Every symbol is a girl.<br>Every pair is a law.</h1>
-      <p class="lede">Play exactly two wordless cards. The first goddess acts; the second becomes her object, instrument, or world. Resolve impossible conditions without attacks, health bars, or damage.</p>
+      <p class="lede">The garden opens for two.</p>
       <div id="titleGoddesses" class="goddess-line" aria-label="The four goddesses"></div>
       <button id="beginButton" class="primary-button">ENTER THE GARDEN <span>→</span></button>
-      <p class="tiny">Seven symbols. Four colors. Sixteen ordered manifestations. The cards remember.</p>
+      <p class="tiny">RGBRGBP</p>
     </section>
 
     <section id="gameScreen" class="screen game-screen" aria-label="Ritual table">
@@ -54,9 +55,9 @@
         <div id="conditionPortrait" class="condition-portrait"></div>
         <div class="condition-name"><h2 id="conditionName"></h2><p id="conditionEpithet"></p></div>
         <div class="aura-comparison">
-          <div><small>NOW</small><div id="currentAura" class="aura-orb"></div></div>
+          <div><small>IS</small><div id="currentAura" class="aura-orb"></div></div>
           <div class="aura-arrow">⇢</div>
-          <div><small>DESIRE</small><div id="targetAura" class="aura-orb"></div></div>
+          <div><small>WISH</small><div id="targetAura" class="aura-orb"></div></div>
         </div>
         <div class="harmony-box">
           <div class="harmony-head"><span>HARMONY</span><b id="harmonyText">0%</b></div>
@@ -71,7 +72,7 @@
 
       <section class="table-column">
         <div class="omen-row-wrap glass-panel">
-          <div class="panel-kicker">THE PLACE CHANGES WHAT SYMBOLS MEAN</div>
+          <div class="panel-kicker">OMENS</div>
           <div id="omenRow" class="omen-row"></div>
         </div>
 
@@ -82,7 +83,7 @@
             <div class="syntax-arrow">→</div>
             <div id="mediumSlot" class="syntax-slot"><span>Ⅱ</span></div>
           </div>
-          <div id="riteName" class="rite-name">CHOOSE THE ACTING SYMBOL</div>
+          <div id="riteName" class="rite-name"></div>
           <div id="riteResult" class="rite-result"></div>
           <div id="colorWake" class="color-wake" aria-hidden="true"></div>
         </div>
@@ -90,10 +91,10 @@
         <div class="hand-zone glass-panel">
           <div class="hand-header">
             <div>
-              <span class="panel-kicker">HANDS</span>
-              <small>Play exactly two. Order is law.</small>
+              <span class="panel-kicker">HAND</span>
+              <small aria-hidden="true">Ⅰ · Ⅱ</small>
             </div>
-            <div class="pile-readout"><span title="Deck">▰ <b id="deckCount">0</b></span><span title="Discard">◫ <b id="discardCount">0</b></span></div>
+            <div class="pile-readout"><span aria-label="Deck">▰ <b id="deckCount">0</b></span><span aria-label="Discard">◫ <b id="discardCount">0</b></span></div>
           </div>
           <div id="hand" class="hand" role="list" aria-label="Your symbols"></div>
           <div class="hand-actions">
@@ -104,20 +105,20 @@
       </section>
 
       <aside class="goddess-column glass-panel">
-        <div class="panel-kicker">THE FOUR WHO ACT</div>
+        <div class="panel-kicker">FOUR</div>
         <div id="goddessRoster" class="goddess-roster"></div>
         <div class="body-map">
-          <div class="panel-kicker">THE FOUR PLACES</div>
+          <div class="panel-kicker">PLACES</div>
           <div class="body-grid">
-            <span title="Hands — immediate agency"><b>✋</b><small>HANDS</small></span>
-            <span title="Eyes — sight and revelation"><b>◉</b><small>EYES</small></span>
-            <span title="Lips — invocation and repetition"><b>⌒</b><small>LIPS</small></span>
-            <span title="Pockets — storage and delay"><b>▱</b><small>POCKETS</small></span>
+            <span aria-label="Hands"><b>✋</b><small>HANDS</small></span>
+            <span aria-label="Eyes"><b>◉</b><small>EYES</small></span>
+            <span aria-label="Lips"><b>⌒</b><small>LIPS</small></span>
+            <span aria-label="Pockets"><b>▱</b><small>POCKETS</small></span>
           </div>
         </div>
         <div id="pocketTray" class="pocket-tray">
           <div class="panel-kicker">POCKETS</div>
-          <p>Nothing is being kept.</p>
+          <p>—</p>
         </div>
       </aside>
     </section>
@@ -125,10 +126,9 @@
 
   <div id="rewardModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="rewardTitle">
     <div class="modal-card reward-card">
-      <p class="eyebrow">THE CONDITION OPENS HER HAND</p>
-      <h2 id="rewardTitle">Choose one symbol to remember.</h2>
+      <p class="eyebrow">HER HAND OPENS</p>
+      <h2 id="rewardTitle">Remember one.</h2>
       <div id="rewardChoices" class="reward-choices"></div>
-      <p class="tiny">The chosen symbol joins the deck. Its face remains wordless; its meaning lives in the codex.</p>
     </div>
   </div>
 
@@ -145,7 +145,7 @@
 
   <div id="codexModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="codexTitle">
     <div class="modal-card codex-card">
-      <button class="modal-close" data-close="codexModal">×</button>
+      <button class="modal-close" data-close="codexModal" aria-label="Close">×</button>
       <p class="eyebrow">THE LIVING CODEX</p>
       <h2 id="codexTitle">Symbols do not explain themselves. They accrue witnesses.</h2>
       <div class="codex-tabs">
@@ -168,6 +168,7 @@
       caches.keys().then(keys => Promise.all(keys.map(key => caches.delete(key))));
     }
   </script>
-  <script src="game.js?v=20260726-entrance-fix-1"></script>
+  <script src="game.js?v=20260725-ritual-veil-1"></script>
+  <script src="ritual-pass.js?v=20260725-ritual-veil-1"></script>
 </body>
 </html>
