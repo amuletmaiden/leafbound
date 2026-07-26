@@ -23,19 +23,17 @@ jobs:
           node-version: 22
 
       - name: Check JavaScript syntax
-        run: |
-          node --check game.js
-          node --check ritual-pass.js
+        run: node --check citadel.js
 
       - name: Install browser
         run: |
           npm install --no-save playwright@1.54.1
           npx playwright install --with-deps chromium
 
-      - name: Exercise the actual game entry flow
+      - name: Exercise the six-card cycle
         shell: bash
         run: |
-          python3 -m http.server 4173 >/tmp/leafbound-server.log 2>&1 &
+          python3 -m http.server 4173 >/tmp/citadel-server.log 2>&1 &
           SERVER_PID=$!
           trap 'kill $SERVER_PID || true' EXIT
           node <<'SCRIPT'
@@ -45,59 +43,38 @@ jobs:
             const browser = await chromium.launch({ headless: true });
             const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
             const errors = [];
-
             page.on('pageerror', error => errors.push(`pageerror: ${error.message}`));
             page.on('console', message => {
               if (message.type() === 'error') errors.push(`console: ${message.text()}`);
             });
 
             await page.goto('http://127.0.0.1:4173/', { waitUntil: 'networkidle' });
-            await page.locator('#beginButton').click();
-            await page.waitForFunction(() => document.querySelector('#gameScreen')?.classList.contains('active'));
-
             const hand = page.locator('#hand .tarot-card');
-            const handCount = await hand.count();
-            if (handCount !== 5) throw new Error(`Expected 5 cards after entry, found ${handCount}`);
+            if (await hand.count() !== 4) throw new Error('The reading must deal a four-card hand.');
+            if (await page.locator('#deckCount').innerText() !== '2') throw new Error('The first deal should leave two cards in deck.');
 
-            const artCount = await page.locator('#hand .tarot-card .card-art-face').count();
-            if (artCount !== handCount) throw new Error(`Expected ${handCount} full-art card faces, found ${artCount}`);
+            await hand.nth(0).click();
+            await hand.nth(1).click();
+            if (await page.locator('#hand .tarot-card.selected').count() !== 2) throw new Error('Both selections should preserve their order.');
+            if (await page.locator('#combineButton').isDisabled()) throw new Error('Combine should be available after two selections.');
 
-            const first = hand.nth(0);
-            const second = hand.nth(1);
-            await first.click();
-            if (!await first.evaluate(element => element.classList.contains('selected-first'))) {
-              throw new Error('First selected card did not receive the red-order class');
-            }
+            await page.locator('#combineButton').click();
+            await page.waitForTimeout(700);
+            if (await page.locator('#discardCount').innerText() !== '2') throw new Error('The combined cards should enter discard.');
+            if (await page.locator('#hand .tarot-card').count() !== 4) throw new Error('The hand should refill after a combination.');
 
-            await second.click();
-            if (!await first.evaluate(element => element.classList.contains('selected-first'))) {
-              throw new Error('First selected card lost the red-order class');
-            }
-            if (!await second.evaluate(element => element.classList.contains('selected-second'))) {
-              throw new Error('Second selected card did not receive the blue-order class');
-            }
-            if (await page.locator('#invokeButton').isDisabled()) throw new Error('Invoke remained disabled after selecting two cards');
-
-            await page.locator('#invokeButton').click();
-            await page.waitForFunction(() => document.querySelector('#turnText')?.textContent?.trim().startsWith('2 /'));
-
-            await page.locator('#codexButton').click();
-            await page.waitForFunction(() => document.querySelector('#codexModal')?.classList.contains('open'));
-            await page.locator('[data-close="codexModal"]').click();
-
+            await hand.nth(0).click();
+            await hand.nth(1).click();
+            await page.locator('#combineButton').click();
+            await page.waitForTimeout(700);
+            if (await page.locator('#cycleCount').innerText() !== 'II') throw new Error('Discard should become the next deck when exhausted.');
+            if (await page.locator('#discardCount').innerText() !== '0') throw new Error('The reshuffle should clear discard.');
+            if (await page.locator('#deckCount').innerText() !== '2') throw new Error('The new deck should retain undealt cards.');
             if (errors.length) throw new Error(errors.join('\n'));
-            await page.screenshot({ path: 'smoke-test.png', fullPage: true });
+
             await browser.close();
           })().catch(error => {
-            console.error(error.stack || error);
+            console.error(error);
             process.exit(1);
           });
           SCRIPT
-
-      - name: Upload smoke screenshot
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: leafbound-smoke
-          path: smoke-test.png
-          if-no-files-found: ignore

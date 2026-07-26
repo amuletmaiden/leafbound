@@ -1,159 +1,62 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-  <meta http-equiv="Pragma" content="no-cache" />
-  <meta http-equiv="Expires" content="0" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="theme-color" content="#080812" />
-  <meta name="description" content="LEAFBOUND — a living tarot." />
-  <title>LEAFBOUND — The Living Tarot</title>
-  <link rel="manifest" href="manifest.json?v=20260725-sacred-deck-2" />
-  <link rel="icon" href="icon.svg?v=20260725-sacred-deck-2" type="image/svg+xml" />
-  <link rel="stylesheet" href="styles.css?v=20260725-sacred-deck-2" />
-  <link rel="stylesheet" href="ritual-pass.css?v=20260725-sacred-deck-2" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#071518">
+  <meta name="description" content="Citadel Seafoam — a six-card combinatorial oracle.">
+  <title>Citadel Seafoam</title>
+  <link rel="manifest" href="manifest.json?v=20260726-cycle">
+  <link rel="icon" href="icon.svg?v=20260726-cycle" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css?v=20260726-cycle">
 </head>
 <body>
-  <canvas id="sky" aria-hidden="true"></canvas>
-  <div class="grain" aria-hidden="true"></div>
-
+  <div class="sky" aria-hidden="true"></div>
   <header class="masthead">
-    <button id="brand" class="brand" aria-label="Return to title">
-      <span class="brand-mark">◈</span>
-      <span><b>LEAFBOUND</b></span>
+    <button id="resetButton" class="wordmark" aria-label="Begin a new reading">
+      <span class="wordmark-mark">✦</span>
+      <span>CITADEL <em>SEAFOAM</em></span>
     </button>
-    <div class="run-readout" aria-live="polite">
-      <span aria-label="Resolved conditions"><i>✦</i><b id="resolvedCount">0</b></span>
-      <span aria-label="Karmic weight"><i>⌁</i><b id="karmaCount">0</b></span>
-      <span aria-label="Discovered manifestations"><i>♢</i><b id="discoveryCount">0</b></span>
+    <div class="ledger" aria-live="polite">
+      <span><small>COMPOUNDS</small><b id="discoveryCount">0</b><i>/ 30</i></span>
+      <span><small>CYCLE</small><b id="cycleCount">I</b></span>
     </div>
-    <nav>
-      <button id="glossToggle" class="icon-button" aria-pressed="false" aria-label="Reveal names">字</button>
-      <button id="codexButton" class="icon-button" aria-label="Open the living codex">☾</button>
-      <button id="soundButton" class="icon-button" aria-pressed="false" aria-label="Toggle sound">♪</button>
-    </nav>
   </header>
 
-  <main id="app">
-    <section id="titleScreen" class="screen title-screen active">
-      <div class="title-sigil" aria-hidden="true">
-        <div class="orbit orbit-a"></div><div class="orbit orbit-b"></div><div class="orbit orbit-c"></div>
-        <div class="heart-core"></div>
+  <main class="reading-shell">
+    <section class="altar-panel" aria-live="polite">
+      <div class="kicker">THE CONFLUENCE</div>
+      <div id="altar" class="altar">
+        <div class="altar-rings" aria-hidden="true"></div>
+        <div id="altarCards" class="altar-cards"></div>
+        <div id="altarMessage" class="altar-message"></div>
       </div>
-      <h1>LEAFBOUND</h1>
-      <p class="lede">The garden opens.</p>
-      <div id="titleGoddesses" class="goddess-line" aria-label="The four goddesses"></div>
-      <button id="beginButton" class="primary-button">ENTER <span>→</span></button>
     </section>
 
-    <section id="gameScreen" class="screen game-screen" aria-label="Ritual table">
-      <aside class="condition-column glass-panel">
-        <div class="panel-kicker">CONDITION <span id="encounterIndex">I</span></div>
-        <div id="conditionPortrait" class="condition-portrait"></div>
-        <div class="condition-name"><h2 id="conditionName"></h2><p id="conditionEpithet"></p></div>
-        <div class="aura-comparison">
-          <div><small>IS</small><div id="currentAura" class="aura-orb"></div></div>
-          <div class="aura-arrow">⇢</div>
-          <div><small>WISH</small><div id="targetAura" class="aura-orb"></div></div>
-        </div>
-        <div class="harmony-box">
-          <div class="harmony-head"><span>HARMONY</span><b id="harmonyText">0%</b></div>
-          <div class="harmony-track"><i id="harmonyFill"></i><em id="harmonyThreshold"></em></div>
-          <div class="stability-pips" id="stabilityPips" aria-label="Stable turns"></div>
-        </div>
-        <div class="turn-dial">
-          <span>RITE</span><b id="turnText">1 / 7</b>
-          <div id="turnPips"></div>
-        </div>
-      </aside>
-
-      <section class="table-column">
-        <div class="omen-row-wrap glass-panel">
-          <div class="panel-kicker">OMENS</div>
-          <div id="omenRow" class="omen-row"></div>
+    <section class="table-panel" aria-label="Card table">
+      <div class="table-label"><span>THE SIX RELICS</span><small>Choose the first card, then the second.</small></div>
+      <div class="card-table">
+        <div class="pile-column">
+          <div id="deckPile" class="pile deck-pile" aria-label="Deck"></div>
+          <p><b>DECK</b><span id="deckCount">6</span></p>
         </div>
 
-        <div id="ritualStage" class="ritual-stage">
-          <div id="manifestPortrait" class="manifest-portrait" aria-live="polite"></div>
-          <div class="syntax-line">
-            <div id="actorSlot" class="syntax-slot"><span>Ⅰ</span></div>
-            <div class="syntax-arrow">→</div>
-            <div id="mediumSlot" class="syntax-slot"><span>Ⅱ</span></div>
-          </div>
-          <div id="riteName" class="rite-name"></div>
-          <div id="riteResult" class="rite-result"></div>
-          <div id="colorWake" class="color-wake" aria-hidden="true"></div>
-        </div>
+        <div id="hand" class="hand" role="list" aria-label="Cards in hand"></div>
 
-        <div class="hand-zone glass-panel">
-          <div class="hand-header">
-            <div>
-              <span class="panel-kicker">HAND</span>
-              <small aria-hidden="true">Ⅰ · Ⅱ</small>
-            </div>
-            <div class="pile-readout"><span aria-label="Deck">▰ <b id="deckCount">0</b></span><span aria-label="Discard">◫ <b id="discardCount">0</b></span></div>
-          </div>
-          <div id="hand" class="hand" role="list" aria-label="Your symbols"></div>
-          <div class="hand-actions">
-            <button id="undoButton" class="quiet-button" disabled>↶ UNDO</button>
-            <button id="invokeButton" class="primary-button compact" disabled>INVOKE <span>✦</span></button>
-          </div>
+        <div class="pile-column">
+          <div id="discardPile" class="pile discard-pile" aria-label="Discard pile"></div>
+          <p><b>DISCARD</b><span id="discardCount">0</span></p>
         </div>
-      </section>
-
-      <aside class="goddess-column glass-panel">
-        <div class="panel-kicker">FOUR</div>
-        <div id="goddessRoster" class="goddess-roster"></div>
-      </aside>
+      </div>
+      <div class="actions">
+        <button id="clearButton" class="text-button" disabled>Clear selection</button>
+        <button id="combineButton" class="combine-button" disabled><span>Combine</span><i>↗</i></button>
+      </div>
+      <p class="instruction"><span>01</span> The first relic leads. <span>02</span> The second transforms it. <span>⌘</span> Each ordered pair becomes a different compound.</p>
     </section>
   </main>
 
-  <div id="rewardModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="rewardTitle">
-    <div class="modal-card reward-card">
-      <p class="eyebrow">HER HAND OPENS</p>
-      <h2 id="rewardTitle">Remember one.</h2>
-      <div id="rewardChoices" class="reward-choices"></div>
-    </div>
-  </div>
-
-  <div id="endModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="endTitle">
-    <div class="modal-card end-card">
-      <div id="endPortrait" class="end-portrait"></div>
-      <p id="endKicker" class="eyebrow"></p>
-      <h2 id="endTitle"></h2>
-      <p id="endCopy"></p>
-      <div id="endStats" class="end-stats"></div>
-      <button id="restartButton" class="primary-button">BEGIN ANOTHER READING <span>↻</span></button>
-    </div>
-  </div>
-
-  <div id="codexModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="codexTitle">
-    <div class="modal-card codex-card">
-      <button class="modal-close" data-close="codexModal" aria-label="Close">×</button>
-      <p class="eyebrow">THE LIVING CODEX</p>
-      <h2 id="codexTitle">Symbols do not explain themselves. They accrue witnesses.</h2>
-      <div class="codex-tabs">
-        <button class="active" data-tab="symbols">SYMBOLS</button>
-        <button data-tab="pairs">MANIFESTATIONS</button>
-        <button data-tab="laws">COLOR PHYSICS</button>
-      </div>
-      <div id="codexContent" class="codex-content"></div>
-    </div>
-  </div>
-
   <div id="toast" class="toast" aria-live="polite"></div>
-  <script data-leafbound-cache-retirement>
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.getRegistrations().then(registrations => {
-        registrations.forEach(registration => registration.unregister());
-      });
-    }
-    if ('caches' in window) {
-      caches.keys().then(keys => Promise.all(keys.map(key => caches.delete(key))));
-    }
-  </script>
-  <script src="game.js?v=20260725-sacred-deck-2"></script>
-  <script src="ritual-pass.js?v=20260725-sacred-deck-2"></script>
+  <script src="citadel.js?v=20260726-cycle"></script>
 </body>
 </html>
